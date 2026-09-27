@@ -25,6 +25,7 @@ import { useEffect } from "react";
 import ModuleChecker from "../src/components/module-select/ModuleChecker";
 import ProSubscriptionExpiredModal from "../src/components/pro-plan/ProSubscriptionExpiredModal";
 import App from "next/app";
+import { Analytics } from "@vercel/analytics/react";
 
 Router.events.on("routeChangeStart", nProgress.start);
 Router.events.on("routeChangeError", nProgress.done);
@@ -100,6 +101,7 @@ function MyApp(props) {
           {/* <ReactQueryDevtools initialIsOpen={false} position="bottom-right" /> */}
         </QueryClientProvider>
       </CacheProvider>
+      <Analytics />
     </>
   );
 }
