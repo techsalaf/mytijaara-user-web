@@ -52,7 +52,7 @@ const RideShareIntroBanner = ({ configData, appUrl }) => {
 
     if (isAndroid) {
       const fallback = encodeURIComponent(appUrl?.android ?? "");
-      window.location.href = `intent://open/#Intent;package=com.sixamtech.sixam_mart_user;S.browser_fallback_url=${fallback};end`;
+      window.location.href = `intent://open/#Intent;package=com.mytijaara.app;S.browser_fallback_url=${fallback};end`;
     } else if (isIos) {
       let appOpened = false;
       const onVisibilityChange = () => {

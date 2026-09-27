@@ -17,10 +17,10 @@ const neutral = {
   1100: "#D6D6D6",
 };
 const moduleTheme = {
-  pharmacy: "#31C0F5",
-  ecommerce: "#EEF5FF",
-  food: "#EF7822",
-  parcel: "#D7EFE4",
+  pharmacy: "#006B3C",
+  ecommerce: "#D4AF37",
+  food: "#005A32",
+  parcel: "#A88418",
 };
 
 const background = {
@@ -43,23 +43,23 @@ const foodCardColor = neutral[800];
 const roundStackOne = "rgba(255, 255, 255, 0.04)";
 const roundStackTwo = "rgba(255, 255, 255, 0.06)";
 const primary = {
-  main: "#039D55",
-  light: "#909BEF",
-  dark: "#1c6641",
-  deep: "#026034",
-  contrastText: neutral[900],
-  semiLight: "#E4FFF3",
+  main: "#006B3C",
+  light: "#E8F5EE",
+  dark: "#005A32",
+  deep: "#004D2B",
+  contrastText: "#FFFFFF",
+  semiLight: "#F2FAF6",
   overLay: "#000000",
-  customType2: "#3BB77E",
-  lite: "rgba(3, 157, 85, 0.1)",
+  customType2: "#005A32",
+  lite: "rgba(0, 107, 60, 0.10)",
   customType3: "#29CE00",
   icon: "#ffffff",
 };
 
 const secondary = {
-  main: "#10B981",
-  light: "#3FC79A",
-  dark: "#0B815A",
+  main: "#D4AF37",
+  light: "#F5E6A8",
+  dark: "#A88418",
   contrastText: neutral[900],
 };
 
@@ -114,24 +114,24 @@ const text = {
   customText1: "#EDF2F7",
 };
 const footer = {
-  inputButton: "#BBFFDF",
-  inputButtonHover: "#67907e",
-  bottom: "rgba(0, 98, 52, 0.3)",
+  inputButton: "#E8F5EE",
+  inputButtonHover: "#006B3C",
+  bottom: "rgba(0, 77, 43, 0.30)",
   foodBottom: "#686B78",
   appDownloadButtonBg: "#1A1A1A",
-  appDownloadButtonBgGray: "#3E594D",
+  appDownloadButtonBgGray: "#004D2B",
   foodFooterBg: "#414141",
 };
 const customColor = {
   textGray: "#9c9c9c",
   textGrayDeep: "#787676",
-  buyButton: "#F9E091",
-  parcelWallet: "#8B3FFD",
-  starAmber: "#F59E0B",
+  buyButton: "#D4AF37",
+  parcelWallet: "#004D2B",
+  starAmber: "#D4AF37",
   vegGreen: "#4caf50",
   vegIcon: "#71B63A",
   textNeutral: "#e0e0e0",
-  newBadge: "#c9a100",
+  newBadge: "#D4AF37",
   ratingCount: "#888888",
   deliveryText: "#a0a0a0",
   tagBg: "#3a3a3a",

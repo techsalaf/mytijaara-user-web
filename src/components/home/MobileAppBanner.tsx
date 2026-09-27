@@ -97,7 +97,7 @@ const MobileAppBanner = () => {
     const isAndroid = /android/i.test(ua);
     if (isAndroid) {
       const fallback = encodeURIComponent(playstore_url);
-      window.location.href = `intent://open/#Intent;package=com.sixamtech.sixam_mart_user;S.browser_fallback_url=${fallback};end`;
+      window.location.href = `intent://open/#Intent;package=com.mytijaara.app;S.browser_fallback_url=${fallback};end`;
     } else {
       window.open(playstore_url, "_blank", "noopener,noreferrer");
     }

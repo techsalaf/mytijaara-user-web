@@ -35,31 +35,31 @@ const background = {
 const divider = "#E6E8F0";
 
 const primary = {
-  main: "#039D55",
-  deep: "#026034",
-  light: "#EBFDF2",
-  dark: "#1c6641",
-  semiLight: "#E4FFF3",
+  main: "#006B3C",
+  deep: "#004D2B",
+  light: "#E8F5EE",
+  dark: "#005A32",
+  semiLight: "#F2FAF6",
   contrastText: "#FFFFFF",
-  customType1: "#0DCB72",
-  customType2: "#3BB77E",
+  customType1: "#006B3C",
+  customType2: "#005A32",
   customType3: "#29CE00",
   overLay: "#000000",
-  lite: "rgba(3, 157, 85, 0.1)",
-  icon: "#039D55",
+  lite: "rgba(0, 107, 60, 0.10)",
+  icon: "#006B3C",
 };
 const moduleTheme = {
-  pharmacy: "#039D55",
-  ecommerce: "#039D55",
-  food: "#039D55",
-  parcel: "#039D55",
+  pharmacy: "#006B3C",
+  ecommerce: "#D4AF37",
+  food: "#005A32",
+  parcel: "#A88418",
 };
-const horizontalCardBG = "#E4FFF3";
+const horizontalCardBG = "#E8F5EE";
 
 const secondary = {
-  main: "#10B981",
-  light: "#3FC79A",
-  dark: "#0B815A",
+  main: "#D4AF37",
+  light: "#F5E6A8",
+  dark: "#A88418",
   contrastText: "#FFFFFF",
 };
 
@@ -116,25 +116,25 @@ const text = {
 };
 
 const footer = {
-  inputButton: "#BBFFDF",
-  inputButtonHover: "#6dcfa6",
-  bottom: "rgba(0, 98, 52, 0.3)",
+  inputButton: "#E8F5EE",
+  inputButtonHover: "#006B3C",
+  bottom: "rgba(0, 77, 43, 0.30)",
   foodBottom: "#686B78",
   appDownloadButtonBg: "#1A1A1A",
-  appDownloadButtonBgGray: "#3E594D",
+  appDownloadButtonBgGray: "#004D2B",
   appDownloadButtonBgHover: "#4f4f4f",
   foodFooterBg: "#414141",
 };
 const customColor = {
   textGray: "#9c9c9c",
   textGrayDeep: "#787676",
-  buyButton: "#F9E091",
-  parcelWallet: "#8B3FFD",
-  starAmber: "#F59E0B", // star/rating color
+  buyButton: "#D4AF37",
+  parcelWallet: "#004D2B",
+  starAmber: "#D4AF37", // star/rating color
   vegGreen: "#4caf50", // veg indicator green
   vegIcon: "#71B63A", // veg SVG icon fill
   textNeutral: "#303030", // Figma text-neutral-default (item name)
-  newBadge: "#e8b931", // "New" store badge bg (Figma warning)
+  newBadge: "#D4AF37", // "New" store badge bg (Figma warning)
   ratingCount: "#949494", // rating review count color (Figma text-neutral-tertiary)
   deliveryText: "#5a5a5a", // delivery info text (Figma text-neutral-secondary)
   tagBg: "#e0e0e0", // "+N" overflow badge, dividers (Figma background-default-tertiary)
