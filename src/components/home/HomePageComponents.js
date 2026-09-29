@@ -17,7 +17,9 @@ import {
   setStoreSelectedItems,
   setStoreSelectedItems2,
 } from "redux/slices/categoryIds";
-import { setWelcomeModal } from "redux/slices/utils";
+// GEMINI-MYTJ: Import setOpenLocationModal and toast
+import { setWelcomeModal, setOpenLocationModal } from "redux/slices/utils";
+import toast from "react-hot-toast";
 import { setWishList } from "redux/slices/wishList";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
 import PushNotificationLayout from "../PushNotificationLayout";
@@ -130,6 +132,30 @@ const HomePageComponents = ({
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [router.query.search]);
+
+  // GEMINI-MYTJ: If user is viewing a hyperlocal module (Food / Grocery) without a location, prompt to set location
+  useEffect(() => {
+    const isHyperlocal =
+      moduleType === ModuleTypes.FOOD || moduleType === ModuleTypes.GROCERY;
+    const hasLocation =
+      typeof window !== "undefined" &&
+      Boolean(
+        localStorage.getItem("location") && localStorage.getItem("zoneid")
+      );
+    if (isHyperlocal && !hasLocation) {
+      toast(
+        t(
+          "Please set your delivery location to view available stores in your area."
+        ),
+        {
+          icon: "📍",
+          duration: 4000,
+          id: "hyperlocal-location-prompt",
+        }
+      );
+      dispatch(setOpenLocationModal(true));
+    }
+  }, [moduleType, dispatch]);
 
   const onSuccessHandler = (response) => {
     setWishListsData(response);

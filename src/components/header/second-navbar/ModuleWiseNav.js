@@ -82,12 +82,16 @@ const ModuleWiseNav = (props) => {
 			/>
 		</CustomStackFullWidth>
 	);
+	// GEMINI-MYTJ: Storefront-first - icon click routes directly to /home storefront
 	const handleIconClick = () => {
-		if (location) {
-			router.push("/home");
-		} else {
-			router.push("/");
-		}
+		const currentModule =
+			router.query.module ||
+			(typeof window !== "undefined"
+				? localStorage.getItem("selectedModuleIdentifier") ||
+				  JSON.parse(localStorage.getItem("module") || "null")?.slug ||
+				  "shop"
+				: "shop");
+		router.push({ pathname: "/home", query: { module: currentModule } });
 	};
 	const getIcon = () => (
 		<Box

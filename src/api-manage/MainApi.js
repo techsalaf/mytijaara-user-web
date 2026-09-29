@@ -19,7 +19,15 @@ MainApi.interceptors.request.use(function (config) {
     token = localStorage.getItem("token");
     language = JSON.parse(localStorage.getItem("language-setting"));
     currentLocation = JSON.parse(localStorage.getItem("currentLatLng"));
-    moduleid = JSON.parse(localStorage.getItem("module"))?.id;
+    // GEMINI-MYTJ: Default module id to Shop (3) if not set
+    try {
+      moduleid =
+        JSON.parse(localStorage.getItem("module"))?.id ||
+        localStorage.getItem("selectedModuleId") ||
+        3;
+    } catch {
+      moduleid = 3;
+    }
   }
   config.headers.latitude = currentLocation?.lat || 0
     config.headers.longitude = currentLocation?.lng || 0

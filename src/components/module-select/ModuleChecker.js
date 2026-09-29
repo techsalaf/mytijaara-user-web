@@ -72,17 +72,53 @@ const ModuleChecker = () => {
         localStorage.setItem("module", JSON.stringify(selectedModule));
         saveModuleParam(selectedModule?.id, selectedModule?.slug);
         dispatch(setSelectedModule(selectedModule));
-      }else{
+      } else {
         toast.error("Selected module is not available");
-        localStorage.removeItem("module");
-        router.replace(
-          { pathname: "/", query: {} },
-          undefined,
-          { shallow: true }
-        );
+        // GEMINI-MYTJ: Fallback to Shop module instead of bouncing to '/'
+        const fallback =
+          data.find((item) => item?.slug === "shop" || item?.module_type === "ecommerce") ||
+          data[0];
+        if (fallback) {
+          localStorage.setItem("module", JSON.stringify(fallback));
+          saveModuleParam(fallback?.id, fallback?.slug);
+          dispatch(setSelectedModule(fallback));
+          router.replace(
+            { pathname: "/home", query: { module: fallback?.slug || fallback?.id } },
+            undefined,
+            { shallow: true }
+          );
+        }
       }
     }
   }, [data, router.query.module, router.query.module_id, dispatch]);
+
+  // GEMINI-MYTJ: When modules load with no module selected in URL or storage, default to Shop
+  useEffect(() => {
+    if (!router.isReady || typeof window === "undefined") return;
+    const moduleIdFromUrl = router.query.module || router.query.module_id;
+    const moduleIdFromStorage = getCurrentModuleId();
+
+    if (data?.length > 0 && !moduleIdFromUrl && !moduleIdFromStorage) {
+      const defaultModule =
+        data.find((item) => item?.slug === "shop" || item?.module_type === "ecommerce") ||
+        data[0];
+      if (defaultModule) {
+        localStorage.setItem("module", JSON.stringify(defaultModule));
+        saveModuleParam(defaultModule?.id, defaultModule?.slug);
+        dispatch(setSelectedModule(defaultModule));
+        const moduleIdentifier = defaultModule?.slug || defaultModule?.id;
+        const targetPath = router.pathname === "/" ? "/home" : router.pathname;
+        router.replace(
+          {
+            pathname: targetPath,
+            query: { ...router.query, module: String(moduleIdentifier) },
+          },
+          undefined,
+          { shallow: true, scroll: false }
+        );
+      }
+    }
+  }, [data, router.isReady, router.query.module, router.query.module_id, dispatch]);
 
   return null;
 };

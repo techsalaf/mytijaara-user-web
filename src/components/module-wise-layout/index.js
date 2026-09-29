@@ -29,8 +29,21 @@ const ModuleWiseLayout = ({ configData, landingPageData, routeSection, routeCate
 	useEffect(() => {
 		if (data?.length > 0) {
 			dispatch(setModules(data));
+			// GEMINI-MYTJ: Default to Shop module if none selected in localStorage or redux
+			const stored = typeof window !== "undefined" ? localStorage.getItem("module") : null;
+			if (!stored && !selectedModule) {
+				const defaultMod =
+					data.find(
+						(m) => m?.slug === "shop" || m?.module_type === "ecommerce"
+					) || data[0];
+				if (defaultMod) {
+					localStorage.setItem("module", JSON.stringify(defaultMod));
+					saveModuleParam(defaultMod?.id, defaultMod?.slug);
+					dispatch(setSelectedModule(defaultMod));
+				}
+			}
 		}
-	}, [data, dispatch]);
+	}, [data, dispatch, selectedModule]);
 
 	useEffect(() => {
 		if (selectedModule) {

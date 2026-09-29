@@ -79,7 +79,11 @@ import {
 import {
   setOrderDetailsModalOpen,
   setOrderInformation,
+  // GEMINI-MYTJ: Import setOpenLocationModal
+  setOpenLocationModal,
 } from "redux/slices/utils";
+// GEMINI-MYTJ: Import setOpenAddressModal
+import { setOpenAddressModal } from "redux/slices/addAddress";
 import CustomImageContainer from "../../CustomImageContainer";
 import thunderstorm from "../assets/thunderstorm.svg";
 import { useFormik } from "formik";
@@ -610,6 +614,27 @@ const ItemCheckout = (props) => {
   }, [cartList, campaignItemList, couponDiscount, storeData]);
 
   const handlePlaceOrder = () => {
+    // GEMINI-MYTJ: Location / delivery address is required at checkout for delivery orders
+    if (orderType === "delivery" || orderType === "schedule_order") {
+      const hasDeliveryAddress =
+        address?.address &&
+        address?.latitude &&
+        address?.longitude &&
+        address?.address !== "null" &&
+        address?.address !== "undefined";
+      if (!hasDeliveryAddress) {
+        toast.error(
+          t("Please select or add a delivery address to complete your order."),
+          {
+            position: "bottom-right",
+            id: "delivery-address-required",
+          }
+        );
+        dispatch(setOpenAddressModal(true));
+        return;
+      }
+    }
+
     const itemsList = page === "campaign" ? campaignItemList : cartList;
     const isAvailable =
       storeData?.schedule_order && getCurrentModuleType() === ModuleTypes.FOOD

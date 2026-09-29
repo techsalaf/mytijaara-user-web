@@ -10,6 +10,8 @@ const initialState = {
   openForgotPasswordModal: false,
   openSignInModal: false,
   searchBannerInView: true,
+  // GEMINI-MYTJ: Controls global location selection modal when switching to hyperlocal modules or checkout
+  openLocationModal: false,
 };
 export const utilsSlice = createSlice({
   name: "utils-data",
@@ -42,6 +44,10 @@ export const utilsSlice = createSlice({
     setSearchBannerInView: (state, action) => {
       state.searchBannerInView = action.payload;
     },
+    // GEMINI-MYTJ: Reducer to open/close location modal
+    setOpenLocationModal: (state, action) => {
+      state.openLocationModal = action.payload;
+    },
   },
 });
 
@@ -55,6 +61,7 @@ export const {
   setOpenForgotPasswordModal,
   setOpenSignInModal,
   setSearchBannerInView,
+  setOpenLocationModal,
 } = utilsSlice.actions;
 
 export default utilsSlice.reducer;

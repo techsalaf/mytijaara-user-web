@@ -2,15 +2,20 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useDispatch, useSelector } from "react-redux";
 import useGetModule from "../../api-manage/hooks/react-query/useGetModule";
-import { setSelectedModule } from "../../redux/slices/utils";
+import { setSelectedModule, setOpenLocationModal } from "../../redux/slices/utils";
 import { setModules } from "../../redux/slices/configData";
+import { saveModuleParam } from "../../utils/moduleParamManager";
 import { CustomStackFullWidth } from "../../styled-components/CustomStyles.style";
 import FooterComponent from "../footer";
 import HeaderComponent from "../header";
 import BottomNav from "../header/BottomNav";
 import { MainLayoutRoot } from "./LandingLayout";
+
+// GEMINI-MYTJ: Dynamic import for location picker modal
+const MapModal = dynamic(() => import("../Map/MapModal"));
 import useGetLandingPage from "api-manage/hooks/react-query/useGetLandingPage";
 import useScrollDirection from "hooks/useScrollDirection";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
@@ -80,8 +85,25 @@ const MainLayout = ({ children, configData }) => {
   useEffect(() => {
     if (data?.length) {
       dispatch(setModules(data));
+      // GEMINI-MYTJ: Default to Shop module if none selected in localStorage or redux
+      const stored =
+        typeof window !== "undefined"
+          ? localStorage.getItem("module")
+          : null;
+      if (!stored && !selectedModule) {
+        const defaultMod =
+          data.find(
+            (item) =>
+              item?.slug === "shop" || item?.module_type === "ecommerce"
+          ) || data[0];
+        if (defaultMod) {
+          localStorage.setItem("module", JSON.stringify(defaultMod));
+          saveModuleParam(defaultMod?.id, defaultMod?.slug);
+          dispatch(setSelectedModule(defaultMod));
+        }
+      }
     }
-  }, [data]);
+  }, [data, selectedModule, dispatch]);
   // if (data) {
   // 	const selectedModuleType = JSON.parse(
   // 		localStorage.getItem("module")
@@ -113,8 +135,9 @@ const MainLayout = ({ children, configData }) => {
   // 	}
   // }
   const { landingPageData } = useSelector((state) => state.configData);
-  const selectedModule = useSelector(
-    (state) => state.utilsData?.selectedModule,
+  // GEMINI-MYTJ: Extract selectedModule and openLocationModal from utilsData
+  const { selectedModule, openLocationModal } = useSelector(
+    (state) => state.utilsData || {}
   );
   const queryModuleType =
     typeof router.query.module === "string" ? router.query.module : null;
@@ -209,6 +232,14 @@ const MainLayout = ({ children, configData }) => {
         router.pathname !== "/product/[id]" && <BottomNav />}
       <SearchProductModal />
       <FloatingCartButton />
+      {/* GEMINI-MYTJ: Global Location Modal for hyperlocal modules and checkout */}
+      {openLocationModal && (
+        <MapModal
+          open={openLocationModal}
+          handleClose={() => dispatch(setOpenLocationModal(false))}
+          disableAutoFocus
+        />
+      )}
     </MainLayoutRoot>
   );
 };

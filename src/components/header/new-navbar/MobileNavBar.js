@@ -23,7 +23,8 @@ import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined
 import { setCartList, clearCartGroups } from "redux/slices/cart";
 import { getCartListModuleWise } from "helper-functions/getCartListModuleWise";
 import { getModuleIdentifier, saveModuleParam } from "utils/moduleParamManager";
-import { setSelectedModule } from "redux/slices/utils";
+// GEMINI-MYTJ: Import setOpenLocationModal
+import { setSelectedModule, setOpenLocationModal } from "redux/slices/utils";
 import useScrollDirection from "hooks/useScrollDirection";
 import { useGetCategories } from "api-manage/hooks/react-query/all-category/all-categorys";
 
@@ -265,6 +266,19 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
     const isSameModule = item?.id === selectedModule?.id;
     // Already on /home with the same module → no-op
     if (isHome && isSameModule) return;
+
+    // GEMINI-MYTJ: When switching to a hyperlocal module (Food / Grocery) without location, prompt and open location modal
+    const isHyperlocal = item?.module_type === "food" || item?.module_type === "grocery";
+    const hasLocation =
+      typeof window !== "undefined" &&
+      Boolean(localStorage.getItem("location") && localStorage.getItem("zoneid"));
+    if (isHyperlocal && !hasLocation) {
+      toast(t("Please set your delivery location to view available stores in your area."), {
+        icon: "📍",
+        duration: 4000,
+      });
+      dispatch(setOpenLocationModal(true));
+    }
 
     dispatch(setSelectedModule(item));
     if (typeof window !== "undefined") {

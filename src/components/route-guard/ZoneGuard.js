@@ -36,11 +36,20 @@ const ZoneGuard = (props) => {
         safeGetItem("selectedModuleId") ||
         storedModule?.slug ||
         storedModule?.id;
+      // GEMINI-MYTJ: Storefront-first - if no module is stored, default to 'shop' instead of bouncing to '/'
       if (storedIdentifier) {
         setChecked(true);
       } else {
-        setChecked(false);
-        router.push("/", undefined, { shallow: true });
+        const defaultIdentifier = "shop";
+        router.replace(
+          {
+            pathname: "/home",
+            query: { ...router.query, module: defaultIdentifier },
+          },
+          undefined,
+          { shallow: true }
+        );
+        setChecked(true);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

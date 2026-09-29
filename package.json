@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "node tests/storefront_and_module_rules.test.js && node tests/eval_storefront_behavior.js",
     "i18n:scan": "node i18n-scan.js",
     "i18n:watch": "node i18n-watch.js",
     "type-check": "tsc --noEmit",

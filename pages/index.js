@@ -16,6 +16,17 @@ const Root = (props) => {
   const { data, refetch } = useGetLandingPage();
   const dispatch = useDispatch();
   const { data: dataConfig, refetch: configRefetch } = useGetConfigData();
+  // GEMINI-MYTJ: Storefront-first client fallback - immediately navigate to storefront defaulting to Shop
+  useEffect(() => {
+    const savedModule =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedModuleIdentifier") ||
+          JSON.parse(localStorage.getItem("module") || "null")?.slug ||
+          "shop"
+        : "shop";
+    Router.replace(`/home?module=${savedModule}`);
+  }, []);
+
   useEffect(() => {
     configRefetch();
     refetch();
@@ -84,6 +95,15 @@ export const getServerSideProps = async (context) => {
       },
     };
   }
+
+  // GEMINI-MYTJ: Storefront-first SSR redirect - visitors to root '/' immediately reach storefront
+  const selectedModuleCookie = req.cookies.selectedModule || "shop";
+  return {
+    redirect: {
+      destination: `/home?module=${selectedModuleCookie}`,
+      permanent: false,
+    },
+  };
 
   const landingPageRes = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/react-landing-page`,
