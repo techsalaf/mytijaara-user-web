@@ -22,6 +22,8 @@ const modifiedFiles = [
   "src/helper-functions/getCurrentModuleType.js",
   "src/helper-functions/getModuleId.js",
   "src/redux/slices/utils.js",
+  "src/components/footer/footer-middle/AppLinks.js",
+  "src/components/home/MobileAppBanner.tsx",
 ];
 
 for (const relPath of modifiedFiles) {
@@ -33,7 +35,7 @@ for (const relPath of modifiedFiles) {
     `File ${relPath} must contain GEMINI-MYTJ marker`
   );
 }
-console.log("✓ Test 1 Passed: All 16 modified core files contain GEMINI-MYTJ marker");
+console.log("✓ Test 1 Passed: All 18 modified core files contain GEMINI-MYTJ marker");
 
 // Test 2: Verify middleware root redirect logic
 const middlewareContent = fs.readFileSync(
@@ -125,6 +127,24 @@ assert.ok(
   checkoutContent.includes("hasDeliveryAddress") && checkoutContent.includes("setOpenAddressModal(true)"),
   "Checkout must block submission and open address modal when delivery address is missing"
 );
-console.log("✓ Test 7 Passed: Checkout enforces delivery address on order placement");
+// Test 8: Verify direct APK download handling without broken intents
+const appLinksContent = fs.readFileSync(
+  path.join(__dirname, "..", "src/components/footer/footer-middle/AppLinks.js"),
+  "utf8"
+);
+assert.ok(
+  appLinksContent.includes("isDirectApk") && appLinksContent.includes(".apk"),
+  "AppLinks must detect direct APK URLs and trigger direct download"
+);
+
+const mobileAppBannerContent = fs.readFileSync(
+  path.join(__dirname, "..", "src/components/home/MobileAppBanner.tsx"),
+  "utf8"
+);
+assert.ok(
+  mobileAppBannerContent.includes("isDirectApk") && mobileAppBannerContent.includes(".apk"),
+  "MobileAppBanner must handle direct APK URLs directly without broken package intents"
+);
+console.log("✓ Test 8 Passed: Direct APK download handling verified in AppLinks and MobileAppBanner");
 
 console.log("\nALL GATE TESTS PASSED SUCCESSFULLY!");

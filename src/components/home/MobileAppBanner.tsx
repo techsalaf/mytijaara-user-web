@@ -91,8 +91,20 @@ const MobileAppBanner = () => {
   const { playstore_url, apple_store_url } =
     data?.download_user_app_links ?? {};
 
+  // GEMINI-MYTJ: Support direct APK download and clean download routing pending Play Store approval
+  const isDirectApk =
+    playstore_url?.endsWith(".apk") || playstore_url?.includes("/downloads/");
+
   const handleAndroidClick = () => {
     if (!playstore_url) return;
+    if (isDirectApk) {
+      window.location.href = playstore_url;
+      return;
+    }
+    if (playstore_url.includes("/download")) {
+      window.open(playstore_url, "_blank", "noopener,noreferrer");
+      return;
+    }
     const ua = navigator.userAgent || navigator.vendor || "";
     const isAndroid = /android/i.test(ua);
     if (isAndroid) {
@@ -178,7 +190,7 @@ const MobileAppBanner = () => {
                   aspectRatio="1"
                 />
                 <Typography fontSize="13px" fontWeight={600}>
-                  {t("Google Play")}
+                  {isDirectApk ? t("Download APK") : t("Google Play")}
                 </Typography>
               </Stack>
             </StoreButton>
@@ -243,7 +255,7 @@ const MobileAppBanner = () => {
                     aspectRatio="1"
                   />
                   <Typography fontSize="13px" fontWeight={600}>
-                    {t("Google Play")}
+                    {isDirectApk ? t("Download APK") : t("Google Play")}
                   </Typography>
                 </Stack>
               </StoreButton>

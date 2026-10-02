@@ -39,8 +39,18 @@ const AppLinks = (props) => {
   if (typeof window !== "undefined") {
     language_direction = window.localStorage.getItem("direction");
   }
+  // GEMINI-MYTJ: Handle direct APK downloads gracefully pending Play Store verification
+  const isDirectApk =
+    landingPageData?.play_store_link?.endsWith(".apk") ||
+    landingPageData?.play_store_link?.includes("/downloads/");
+
   const goToApp = (href) => {
-    window.open(href);
+    if (!href) return;
+    if (href.endsWith(".apk") || href.includes("/downloads/")) {
+      window.location.href = href;
+      return;
+    }
+    window.open(href, "_blank", "noopener,noreferrer");
   };
   const { t } = useTranslation();
   const googlePlay = () => (
@@ -72,7 +82,7 @@ const AppLinks = (props) => {
               lineHeight: { xs: "10px", sm: "13px", md: "10px" },
             }}
           >
-            {t("GET IT ON")}
+            {isDirectApk ? t("DOWNLOAD") : t("GET IT ON")}
           </Typography>
           <Typography
             sx={{
@@ -81,7 +91,7 @@ const AppLinks = (props) => {
             }}
             color={theme.palette.whiteContainer.main}
           >
-            Google Play
+            {isDirectApk ? t("Android APK") : "Google Play"}
           </Typography>
         </Stack>
       </Stack>
