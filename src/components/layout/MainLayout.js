@@ -13,15 +13,15 @@ import FooterComponent from "../footer";
 import HeaderComponent from "../header";
 import BottomNav from "../header/BottomNav";
 import { MainLayoutRoot } from "./LandingLayout";
-
-// GEMINI-MYTJ: Dynamic import for location picker modal
-const MapModal = dynamic(() => import("../Map/MapModal"));
 import useGetLandingPage from "api-manage/hooks/react-query/useGetLandingPage";
 import useScrollDirection from "hooks/useScrollDirection";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 import { ModuleTypes } from "helper-functions/moduleTypes";
 import SearchProductModal from "../home/search/SearchProductModal";
 import FloatingCartButton from "../header/new-navbar/FloatingCartButton";
+
+// GEMINI-MYTJ: Dynamic import for location picker modal
+const MapModal = dynamic(() => import("../Map/MapModal"));
 
 // Routes that own their own sticky/in-flow header on mobile (no extra mt needed).
 // Adding a route here removes the default mobile navbar offset on that page.

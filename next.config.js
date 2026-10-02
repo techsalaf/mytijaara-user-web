@@ -1,4 +1,10 @@
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'https://dashboard.mytijaara.com',
+    NEXT_CLIENT_HOST_URL: process.env.NEXT_CLIENT_HOST_URL || 'https://app.mytijaara.com',
+    NEXT_PUBLIC_SITE_VERSION: process.env.NEXT_PUBLIC_SITE_VERSION || '4.0',
+    NEXT_PUBLIC_GOOGLE_MAP_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAP_KEY,
+  },
   reactStrictMode: true,
   // Hide Next.js dev-mode indicator (bottom-left "N" badge)
   devIndicators: {
