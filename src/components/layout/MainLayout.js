@@ -134,7 +134,7 @@ const MainLayout = ({ children, configData }) => {
   // 		}
   // 	}
   // }
-  const { landingPageData } = useSelector((state) => state.configData);
+  const { landingPageData: reduxLandingPageData } = useSelector((state) => state.configData);
   // GEMINI-MYTJ: Extract selectedModule and openLocationModal from utilsData
   const { selectedModule, openLocationModal } = useSelector(
     (state) => state.utilsData || {}
@@ -148,7 +148,7 @@ const MainLayout = ({ children, configData }) => {
     null;
   const { data: landing, refetch: landingRefetch } = useGetLandingPage();
   useEffect(() => {
-    if (!landingPageData) {
+    if (!landingPageData && !reduxLandingPageData) {
       landingRefetch();
     }
   }, []);
@@ -223,7 +223,7 @@ const MainLayout = ({ children, configData }) => {
       <footer>
         <FooterComponent
           configData={configData}
-          landingPageData={landingPageData ?? landing}
+          landingPageData={landingPageData ?? reduxLandingPageData ?? landing}
         />
       </footer>
       {isSmall &&
