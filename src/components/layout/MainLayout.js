@@ -76,6 +76,13 @@ const MainLayout = ({ children, configData, landingPageData }) => {
   const router = useRouter();
   const { page } = router.query;
   const dispatch = useDispatch();
+  
+  const { landingPageData: reduxLandingPageData } = useSelector((state) => state.configData);
+  // GEMINI-MYTJ: Extract selectedModule and openLocationModal from utilsData
+  const { selectedModule, openLocationModal } = useSelector(
+    (state) => state.utilsData || {}
+  );
+
   useEffect(() => {
     if (router.pathname === "/home") {
       refetch();
@@ -134,11 +141,6 @@ const MainLayout = ({ children, configData, landingPageData }) => {
   // 		}
   // 	}
   // }
-  const { landingPageData: reduxLandingPageData } = useSelector((state) => state.configData);
-  // GEMINI-MYTJ: Extract selectedModule and openLocationModal from utilsData
-  const { selectedModule, openLocationModal } = useSelector(
-    (state) => state.utilsData || {}
-  );
   const queryModuleType =
     typeof router.query.module === "string" ? router.query.module : null;
   const currentModuleType =
