@@ -66,7 +66,7 @@ const getMobileMarginTop = ({ pathname, currentModuleType, isCollapsed }) => {
   return isCollapsed ? "10rem" : "11.9rem";
 };
 
-const MainLayout = ({ children, configData }) => {
+const MainLayout = ({ children, configData, landingPageData }) => {
   const [rerenderUi, setRerenderUi] = useState(false);
   const { data, refetch } = useGetModule();
   const theme = useTheme();
