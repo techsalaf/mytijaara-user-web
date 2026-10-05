@@ -17,47 +17,60 @@ export const getCommonServerSideProps = async (
   pageName,
   pageId = null
 ) => {
-  const { req, res } = context;
-  const language = req.cookies.languageSetting;
+  try {
+    const { req, res } = context;
+    const language = req.cookies.languageSetting;
 
-  const configRes = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/config`,
-    {
-      method: "GET",
-      headers: {
-        "X-software-id": 33571750,
-        "X-server": "server",
-        "X-localization": language,
-        origin: process.env.NEXT_CLIENT_HOST_URL,
-      },
+    const configRes = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/config`,
+      {
+        method: "GET",
+        headers: {
+          "X-software-id": 33571750,
+          "X-server": "server",
+          "X-localization": language,
+          origin: process.env.NEXT_CLIENT_HOST_URL,
+        },
+      }
+    );
+    const config = await configRes.json();
+
+    if (
+      checkMaintenanceMode(config) &&
+      context.resolvedUrl &&
+      !context.resolvedUrl.startsWith("/maintainance")
+    ) {
+      return {
+        redirect: {
+          destination: "/maintainance",
+          permanent: false,
+        },
+      };
     }
-  );
-  const config = await configRes.json();
 
-  if (
-    checkMaintenanceMode(config) &&
-    context.resolvedUrl &&
-    !context.resolvedUrl.startsWith("/maintainance")
-  ) {
+    const metaData = await fetchPageMetadata(pageName, pageId, language);
+    // Set cache control headers for 1 hour (3600 seconds)
+    if (res && res.setHeader) {
+      res.setHeader(
+        "Cache-Control",
+        "public, s-maxage=3600, stale-while-revalidate"
+      );
+    }
+
     return {
-      redirect: {
-        destination: "/maintainance",
-        permanent: false,
+      props: {
+        configData: config,
+        metaData: metaData,
+      },
+    };
+  } catch (error) {
+    console.error("Error in getCommonServerSideProps:", error);
+    return {
+      props: {
+        configData: null,
+        metaData: null,
+        serverError: error.message || String(error),
       },
     };
   }
-
-  const metaData = await fetchPageMetadata(pageName, pageId, language);
-  // Set cache control headers for 1 hour (3600 seconds)
-  res.setHeader(
-    "Cache-Control",
-    "public, s-maxage=3600, stale-while-revalidate"
-  );
-
-  return {
-    props: {
-      configData: config,
-      metaData: metaData,
-    },
-  };
 };
