@@ -25,6 +25,7 @@ import CustomImageContainer from "../../CustomImageContainer";
 import PaymentMethodCard from "../PaymentMethodCard";
 import { setOfflineMethod } from "../../../redux/slices/offlinePaymentData";
 import { getToken } from "../../../helper-functions/getToken";
+import { getCurrentModuleType } from "../../../helper-functions/getCurrentModuleType";
 import wallet from "../assets/wallet.png";
 import money from "../assets/money.png";
 import OfflinePaymentIcon from "../assets/OfflinePaymentIcon";
@@ -232,12 +233,16 @@ const OtherModulePayment = (props) => {
     setChangeAmount,
     failed,
     failedOrderPlace,
+    onBeforeProceed,
+    onProceed,
   } = props;
 
   const theme = useTheme();
   const router = useRouter();
   const dispatch = useDispatch();
   const token = getToken();
+  const isServiceModule = getCurrentModuleType() === "service";
+  const codLabel = isServiceModule ? t("Cash After Service") : t("Cash On Delivery");
   const [openOfflineOptions, setOpenOfflineOptions] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const { offlineMethod } = useSelector((state) => state.offlinePayment);
@@ -306,6 +311,10 @@ const OtherModulePayment = (props) => {
     if (failed) {
       failedOrderPlace?.();
     } else {
+      // onBeforeProceed is a service-module-only hook — guard with isServiceModule
+      // so this has zero effect on food, grocery, pharmacy, or any other module.
+      if (isServiceModule && onBeforeProceed && !onBeforeProceed()) return;
+      onProceed?.();
       setOpenModel(false);
     }
   };
@@ -313,7 +322,7 @@ const OtherModulePayment = (props) => {
   // Sync expanded with COD selection
   useEffect(() => {
     setExpanded(paymentMethod === "cash_on_delivery");
-    if (paymentMethod !== "cash_on_delivery") {
+    if (paymentMethod !== "cash_on_delivery" && setChangeAmount) {
       setChangeAmount("");
     }
   }, [paymentMethod]);
@@ -509,7 +518,7 @@ const OtherModulePayment = (props) => {
                         fontWeight={600}
                         color="text.primary"
                       >
-                        {t("Cash On Delivery")}
+                        {codLabel}
                       </Typography>
                     </Stack>
                     <Radio
@@ -544,7 +553,7 @@ const OtherModulePayment = (props) => {
                         fontWeight={600}
                         color="text.primary"
                       >
-                        {t("Cash On Delivery")}
+                        {codLabel}
                       </Typography>
                     </Stack>
                     <Radio

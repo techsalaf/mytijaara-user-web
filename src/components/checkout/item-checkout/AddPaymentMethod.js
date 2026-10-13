@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import {
-  alpha,
   Box,
-  Button,
   Drawer,
   IconButton,
+  Skeleton,
   Stack,
   Typography,
   useMediaQuery,
 } from "@mui/material";
 import { t } from "i18next";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
 import PaymentIcon from "@mui/icons-material/Payment";
 import { useTheme } from "@emotion/react";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,6 +23,7 @@ import wallet from "../assets/wallet.png";
 import money from "../assets/money.png";
 import OfflinePaymentIcon from "../assets/OfflinePaymentIcon";
 import { getAmountWithSign } from "helper-functions/CardHelpers";
+import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 
 const AddPaymentMethod = (props) => {
   const {
@@ -47,30 +47,69 @@ const AddPaymentMethod = (props) => {
     payableAmount,
     changeAmount,
     setChangeAmount,
+    onBeforeProceed,
+    locked,
+    repeatCount = 0,
+    isAmountReady = true,
   } = props;
+  // Repeat series shows the whole-series total; expose the per-booking figure.
+  const isRepeatSeries = repeatCount > 1;
+  const perBookingAmount = isRepeatSeries
+    ? (Number(payableAmount) || 0) / repeatCount
+    : 0;
   const [openModal, setOpenModel] = useState(false);
   const { offlineMethod } = useSelector((state) => state.offlinePayment);
   const theme = useTheme();
   const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const handleClick = () => setOpenModel(true);
+  // The modal mutates these DRAFT copies while the user is still browsing
+  // radios — the summary row below keeps showing the last CONFIRMED choice
+  // (`paymentMethod`/`paymentMethodImage`, the real lifted state) until
+  // "Proceed" is pressed, which commits draft → real via `handleProceed`.
+  const [draftPaymentMethod, setDraftPaymentMethod] = useState(paymentMethod);
+  const [draftPaymentMethodImage, setDraftPaymentMethodImage] =
+    useState(paymentMethodImage);
+
+  const handleClick = () => {
+    setDraftPaymentMethod(paymentMethod);
+    setDraftPaymentMethodImage(paymentMethodImage);
+    setOpenModel(true);
+  };
+
+  const handleProceed = () => {
+    setPaymentMethod(draftPaymentMethod);
+    setPaymentMethodImage(draftPaymentMethodImage);
+  };
 
   useEffect(() => {
-    if (paymentMethod?.match("offline_payment")) {
+    if (draftPaymentMethod?.match("offline_payment")) {
       dispatch(setOfflineInfoStep(1));
-      setPaymentMethodImage(OfflinePaymentIcon);
+      setDraftPaymentMethodImage(OfflinePaymentIcon);
     } else {
       dispatch(setOfflineInfoStep(0));
     }
-    if (paymentMethod === "cash_on_delivery") {
-      setPaymentMethodImage(money.src);
-    } else if (paymentMethod === "wallet") {
-      setPaymentMethodImage(wallet.src);
+    if (draftPaymentMethod === "cash_on_delivery") {
+      setDraftPaymentMethodImage(money.src);
+    } else if (draftPaymentMethod === "wallet") {
+      setDraftPaymentMethodImage(wallet.src);
     }
-  }, [paymentMethod]);
+  }, [draftPaymentMethod]);
 
-  const hasPaymentMethod = Boolean(paymentMethod || usePartialPayment);
+  const hasPaymentMethod = locked || Boolean(paymentMethod || usePartialPayment);
+
+  // The summary row shows the last CONFIRMED method. For the bundled local
+  // methods (COD / wallet) the parent may set `paymentMethod` without ever
+  // setting `paymentMethodImage` — e.g. COD auto-selected on first load — which
+  // left the icon broken until the modal was opened and "Proceed" pressed.
+  // Fall back to the bundled asset so the icon always renders.
+  const resolvedPaymentMethodImage =
+    paymentMethodImage ||
+    (paymentMethod === "cash_on_delivery"
+      ? money.src
+      : paymentMethod === "wallet"
+      ? wallet.src
+      : paymentMethodImage);
 
   const closeButton = (
     <IconButton
@@ -94,8 +133,8 @@ const AddPaymentMethod = (props) => {
 
   const paymentMethodNode = (
     <PaymentMethod
-      setPaymentMethod={setPaymentMethod}
-      paymentMethod={paymentMethod}
+      setPaymentMethod={setDraftPaymentMethod}
+      paymentMethod={draftPaymentMethod}
       zoneData={zoneData}
       configData={configData}
       orderType={orderType}
@@ -103,8 +142,8 @@ const AddPaymentMethod = (props) => {
       setOpenModel={setOpenModel}
       forprescription={forprescription}
       offlinePaymentOptions={offlinePaymentOptions}
-      paymentMethodImage={paymentMethodImage}
-      setPaymentMethodImage={setPaymentMethodImage}
+      paymentMethodImage={draftPaymentMethodImage}
+      setPaymentMethodImage={setDraftPaymentMethodImage}
       setSwitchToWallet={setSwitchToWallet}
       isZoneDigital={isZoneDigital}
       handlePartialPayment={handlePartialPayment}
@@ -115,6 +154,8 @@ const AddPaymentMethod = (props) => {
       payableAmount={payableAmount}
       changeAmount={changeAmount}
       setChangeAmount={setChangeAmount}
+      onBeforeProceed={onBeforeProceed}
+      onProceed={handleProceed}
     />
   );
 
@@ -123,151 +164,176 @@ const AddPaymentMethod = (props) => {
       sx={{
         width: "100%",
         backgroundColor: theme.palette.background.paper,
-        borderRadius: { xs: "10px", md: "14px" },
-        boxShadow: `0 1px 4px ${alpha("#000", 0.06)}`,
-        px: { xs: 2, md: 3 },
-        py: { xs: 1.5, md: 2 },
+        borderRadius: "16px",
+        boxShadow: "none",
+        padding: { xs: "16px", md: "20px" },
       }}
     >
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        gap={{ xs: 1, md: 2 }}
-        width="100%"
-      >
-        <Stack spacing={0.5} flex={1} minWidth={0}>
+      <Stack direction="row" alignItems="center" gap={0.5}>
+        <Stack flex={1} minWidth={0} gap={0.25}>
           <Typography
             sx={{
               fontWeight: 700,
-              fontSize: { xs: "14px", md: "16px" },
-              color: theme.palette.text.primary,
+              fontSize: { xs: "16px", md: "18px" },
+              letterSpacing: "-0.54px",
+              color: "neutral.1050",
             }}
           >
             {t("Payment Method")}
           </Typography>
+          <Typography
+            sx={{
+              fontSize: "14px",
+              letterSpacing: "-0.42px",
+              color: theme.palette.neutral?.[500] || theme.palette.text.secondary,
+            }}
+          >
+            {t("Add at least one option to pay your order.")}
+          </Typography>
+        </Stack>
 
-          {hasPaymentMethod ? (
-            <Stack
-              direction="row"
-              alignItems="center"
-              gap={1}
-              flexWrap="wrap"
-              minWidth={0}
+        {!locked && (
+          <IconButton
+            onClick={handleClick}
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: "8px",
+              backgroundColor: theme.palette.background.secondary,
+              color: theme.palette.primary.main,
+              flexShrink: 0,
+            }}
+          >
+            <EditIcon sx={{ fontSize: "18px" }} />
+          </IconButton>
+        )}
+      </Stack>
+
+      {hasPaymentMethod && (
+        <Stack
+          direction="row"
+          alignItems="center"
+          gap="12px"
+          flexWrap="wrap"
+          onClick={handleClick}
+          sx={{
+            mt: 2,
+            cursor: locked ? "default" : "pointer",
+            backgroundColor: theme.palette.background.default,
+            borderRadius: "8px",
+            padding: "12px",
+          }}
+        >
+          {paymentMethod?.match("offline_payment") ? (
+            <OfflinePaymentIcon />
+          ) : usePartialPayment ? (
+            <PaymentIcon
+              sx={{
+                width: 20,
+                height: 20,
+                color: theme.palette.primary.main,
+              }}
+            />
+          ) : (
+            <CustomImageContainer
+              src={resolvedPaymentMethodImage}
+              width="20px"
+              height="20px"
+              alt="Payment Method"
+              objectfit="contain"
+            />
+          )}
+          <Stack sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              sx={{
+                fontWeight: 500,
+                fontSize: "16px",
+                letterSpacing: "-0.48px",
+                color: "neutral.1050",
+                textTransform: "capitalize",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
             >
-              {paymentMethod?.match("offline_payment") ? (
-                <OfflinePaymentIcon />
-              ) : usePartialPayment ? (
-                <PaymentIcon
-                  sx={{
-                    width: 20,
-                    height: 20,
-                    color: theme.palette.primary.main,
-                  }}
-                />
-              ) : (
-                <CustomImageContainer
-                  src={paymentMethodImage}
-                  width="auto"
-                  height="20px"
-                  alt="Payment Method Image"
-                  objectfit="contain"
-                />
-              )}
+              {usePartialPayment
+                ? t("Paid By Wallet")
+                : paymentMethod === "offline_payment"
+                ? `${paymentMethod?.replaceAll("_", " ")} (${
+                    offlineMethod?.method_name
+                  })`
+                : paymentMethod === "cash_on_delivery" &&
+                  getCurrentModuleType() === "service"
+                ? t("Cash After Service")
+                : t(paymentMethod?.replaceAll("_", " "))}
+            </Typography>
+
+            {isRepeatSeries && isAmountReady && (
               <Typography
                 sx={{
-                  fontSize: { xs: "12px", md: "13px" },
+                  fontSize: { xs: "11px", md: "12px" },
                   fontWeight: 500,
-                  color: theme.palette.text.primary,
-                  textTransform: "capitalize",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  color: theme.palette.text.secondary,
                 }}
               >
-                {usePartialPayment
-                  ? t("Paid By Wallet")
-                  : paymentMethod === "offline_payment"
-                  ? `${paymentMethod?.replaceAll("_", " ")} (${
-                      offlineMethod?.method_name
-                    })`
-                  : t(paymentMethod?.replaceAll("_", " "))}
+                {t("Single booking")}
                 {" : "}
                 <Typography
                   component="span"
                   sx={{ fontWeight: 600, fontSize: "inherit" }}
                 >
-                  {getAmountWithSign(
-                    usePartialPayment ? walletBalance : payableAmount
-                  )}
+                  {getAmountWithSign(perBookingAmount)}
+                </Typography>{" "}
+                {`× ${repeatCount} ${t("bookings")}`}
+              </Typography>
+            )}
+
+            {usePartialPayment && paymentMethod && (
+              <Typography
+                sx={{
+                  fontSize: { xs: "12px", md: "13px" },
+                  fontWeight: 500,
+                  color: theme.palette.text.secondary,
+                  textTransform: "capitalize",
+                }}
+              >
+                {paymentMethod === "offline_payment"
+                  ? `${t("offline payment")} (${offlineMethod?.method_name})`
+                  : paymentMethod === "cash_on_delivery" &&
+                    getCurrentModuleType() === "service"
+                  ? t("Cash After Service")
+                  : t(paymentMethod.replaceAll("_", " "))}{" "}
+                {t("(Due)")}
+                {" : "}
+                <Typography
+                  component="span"
+                  sx={{ fontWeight: 600, fontSize: "inherit" }}
+                >
+                  {getAmountWithSign(payableAmount - walletBalance)}
                 </Typography>
               </Typography>
+            )}
+          </Stack>
 
-              {usePartialPayment && paymentMethod && (
-                <Typography
-                  sx={{
-                    fontSize: { xs: "12px", md: "13px" },
-                    fontWeight: 500,
-                    color: theme.palette.text.secondary,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {paymentMethod === "offline_payment"
-                    ? `${t("offline payment")} (${offlineMethod?.method_name})`
-                    : t(paymentMethod.replaceAll("_", " "))}{" "}
-                  {t("(Due)")}
-                  {" : "}
-                  <Typography
-                    component="span"
-                    sx={{ fontWeight: 600, fontSize: "inherit" }}
-                  >
-                    {getAmountWithSign(payableAmount - walletBalance)}
-                  </Typography>
-                </Typography>
-              )}
-            </Stack>
-          ) : (
+          {isAmountReady ? (
             <Typography
               sx={{
-                fontSize: { xs: "11px", md: "12px" },
-                color: theme.palette.text.secondary,
+                fontSize: "18px",
+                letterSpacing: "-0.54px",
+                color: "neutral.1050",
               }}
             >
-              {t("Add at least one option to pay your order.")}
+              {getAmountWithSign(
+                usePartialPayment ? walletBalance : payableAmount
+              )}
             </Typography>
+          ) : (
+            <Skeleton variant="text" width={60} />
           )}
         </Stack>
+      )}
 
-        <Button
-          onClick={handleClick}
-          variant="contained"
-          disableElevation
-          startIcon={
-            <AddCircleOutlineIcon
-              sx={{ fontSize: 18, color: theme.palette.whiteContainer.main }}
-            />
-          }
-          sx={{
-            flexShrink: 0,
-            px: { xs: 1.75, md: 2.5 },
-            py: { xs: 0.75, md: 1 },
-            borderRadius: "8px",
-            textTransform: "none",
-            fontWeight: 600,
-            fontSize: { xs: "13px", md: "14px" },
-            color: theme.palette.whiteContainer.main,
-            backgroundColor: theme.palette.primary.main,
-            "&:hover": {
-              backgroundColor: theme.palette.primary.dark,
-              boxShadow: "none",
-            },
-          }}
-        >
-          {hasPaymentMethod ? t("Change") : t("Add")}
-        </Button>
-      </Stack>
-
-      {openModal &&
+      {!locked && openModal &&
         (isMobile ? (
           <Drawer
             anchor="bottom"

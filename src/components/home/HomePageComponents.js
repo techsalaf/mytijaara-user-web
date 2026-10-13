@@ -1,25 +1,25 @@
 import { NoSsr, styled, Typography } from "@mui/material";
 import { Box } from "@mui/system";
+import { getApiMessage } from "api-manage/getApiContent";
 import { baseUrl } from "api-manage/MainApi";
 import useGetLastOrderWithoutReview from "api-manage/hooks/react-query/review/useGetLastOrderWithoutReview";
 import useReviewReminderCancel from "api-manage/hooks/react-query/review/useReviewReminderCancel";
 import { useWishListGet } from "api-manage/hooks/react-query/wish-list/useWishListGet";
 import CashBackPopup from "components/cash-back-popup/CashBackPopup";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
-import { getToken } from "helper-functions/getToken";
+import { getGuestId, getToken } from "helper-functions/getToken";
 import { ModuleTypes } from "helper-functions/moduleTypes";
 import { t } from "i18next";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setFilterData,
   setStoreSelectedItems,
   setStoreSelectedItems2,
 } from "redux/slices/categoryIds";
-// GEMINI-MYTJ: Import setOpenLocationModal and toast
-import { setWelcomeModal, setOpenLocationModal } from "redux/slices/utils";
-import toast from "react-hot-toast";
+import { setWelcomeModal } from "redux/slices/utils";
 import { setWishList } from "redux/slices/wishList";
 import { CustomStackFullWidth } from "styled-components/CustomStyles.style";
 import PushNotificationLayout from "../PushNotificationLayout";
@@ -33,7 +33,7 @@ import Parcel from "./module-wise-components/parcel/Index";
 import Pharmacy from "./module-wise-components/pharmacy/Pharmacy";
 
 import { onErrorResponse } from "api-manage/api-error-response/ErrorResponses";
-import { GoogleApi } from "api-manage/hooks/react-query/googleApi";
+import useGetZoneId from "api-manage/hooks/react-query/google-api/useGetZone";
 import useGetOfflinePaymentOptions from "api-manage/hooks/react-query/offlinePayment/useGetOfflinePaymentOptions";
 import { useUpdatePaymentMethod } from "api-manage/hooks/react-query/payment-method/useUpdatePaymentMethod";
 import { useGetWishList } from "api-manage/hooks/react-query/rental-wishlist/useGetWishlist";
@@ -42,9 +42,15 @@ import { useUpdatePaymentByWallet } from "api-manage/hooks/react-query/useUpdate
 import PaymentMethod from "components/checkout/PaymentMethod";
 import ScrollUpButton from "components/common/ScrollUpButton";
 import IncompleteOrderModal from "components/home/IncompleteOrderModal";
+import { resolveFailedPayment } from "helper-functions/failedPayment";
+import {
+  followPaymentRedirect,
+  getRedirectLink,
+} from "helper-functions/paymentRedirect";
+import useMakePayment from "components/home/module-wise-components/rental/rental-api-manage/hooks/react-query/details/useMakePayment";
 import Rental from "components/home/module-wise-components/rental/Rental";
+import ServiceModule from "components/home/module-wise-components/service/Service";
 import TaxiSearchPanel from "components/home/module-wise-components/rental/components/global/search/TaxiSearchPanel";
-import { useQuery } from "react-query";
 import {
   getDigitalMethodFromZone,
   handleFailedOrderPlace,
@@ -81,7 +87,8 @@ const HomePageComponents = ({
   const { refetch: refetchFailedPayment, data: failPayment } =
     useGetFailedPayment("", (res) => {
       if (res) {
-        const orderId = res?.order_id;
+        // Rental answers with `trip_id`, mart/parcel with `order_id`.
+        const orderId = resolveFailedPayment(res)?.id;
         const isHidden = localStorage.getItem(
           `incomplete_order_hidden_${orderId}`
         );
@@ -101,14 +108,12 @@ const HomePageComponents = ({
     }
   }, []);
 
-  const { data: zoneData } = useQuery(
-    ["zoneId", currentLatLng],
-    async () => GoogleApi.getZoneId(currentLatLng),
-    {
-      retry: 1,
-      enabled: !!currentLatLng,
-    }
-  );
+  // Shares the header's cache entry instead of issuing a second identical
+  // get-zone-id request under a differently-shaped query key.
+  const { data: zoneContent } = useGetZoneId(currentLatLng, !!currentLatLng);
+  // Downstream helpers below still read `zoneData?.data`. Memoised so the
+  // wrapper keeps a stable identity across renders.
+  const zoneData = useMemo(() => ({ data: zoneContent }), [zoneContent]);
   const { mutate: paymentMethodUpdateMutation, isLoading: repayOrderLoading } =
     useUpdatePaymentMethod();
   const { mutate: walletPaymentMutation } = useUpdatePaymentByWallet();
@@ -117,8 +122,10 @@ const HomePageComponents = ({
     refetch: refetchOfflinePaymentOptions,
     isLoading: offlineIsLoading,
   } = useGetOfflinePaymentOptions();
+  const failedPayment = resolveFailedPayment(failPayment);
+  const { mutate: rentalPayMutate } = useMakePayment();
   const isZoneDigital = getDigitalMethodFromZone(
-    failPayment?.zone_id,
+    failedPayment?.zoneId,
     zoneData?.data
   );
   useEffect(() => {
@@ -132,30 +139,6 @@ const HomePageComponents = ({
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [router.query.search]);
-
-  // GEMINI-MYTJ: If user is viewing a hyperlocal module (Food / Grocery) without a location, prompt to set location
-  useEffect(() => {
-    const isHyperlocal =
-      moduleType === ModuleTypes.FOOD || moduleType === ModuleTypes.GROCERY;
-    const hasLocation =
-      typeof window !== "undefined" &&
-      Boolean(
-        localStorage.getItem("location") && localStorage.getItem("zoneid")
-      );
-    if (isHyperlocal && !hasLocation) {
-      toast(
-        t(
-          "Please set your delivery location to view available stores in your area."
-        ),
-        {
-          icon: "📍",
-          duration: 4000,
-          id: "hyperlocal-location-prompt",
-        }
-      );
-      dispatch(setOpenLocationModal(true));
-    }
-  }, [moduleType, dispatch]);
 
   const onSuccessHandler = (response) => {
     setWishListsData(response);
@@ -176,7 +159,10 @@ const HomePageComponents = ({
 
   const { refetch: lastReviewRefetch, data } = useGetLastOrderWithoutReview(
     (res) => {
-      if (res?.order_id) {
+      if (
+        res?.order_id &&
+        !localStorage.getItem(`last_order_review_hidden_${res.order_id}`)
+      ) {
         setOrderId(res.order_id);
         setOpen(true);
       }
@@ -222,6 +208,10 @@ const HomePageComponents = ({
         return (
           <Rental configData={configData} landingPageData={landingPageData} />
         );
+      case ModuleTypes.SERVICE:
+        return (
+          <ServiceModule configData={configData} routeSection={routeSection} />
+        );
       case ModuleTypes.RIDE:
         return (
           <RideShareModuleLandingPage
@@ -236,6 +226,7 @@ const HomePageComponents = ({
 
   const handleClose = () => {
     if (orderId) {
+      localStorage.setItem(`last_order_review_hidden_${orderId}`, "1");
       cancelReviewRefetch();
     }
   };
@@ -255,11 +246,14 @@ const HomePageComponents = ({
   };
   const handlePayment = (mutation) => {
     const handleSuccess = (response) => {
-      toast.success(response.message);
+      // The order APIs hand back an axios response, so the message sits at
+      // `data.message`; the rental hook hands back the payload itself.
+      const message = getApiMessage(response);
+      if (message) toast.success(message);
     };
 
     const formData = {
-      order_id: failPayment?.order_id,
+      order_id: failedPayment?.id,
       _method: "put",
     };
 
@@ -268,17 +262,53 @@ const HomePageComponents = ({
       onError: onErrorResponse,
     });
   };
+  // Rental retries go to `rental/user/trip/payment`: cash/wallet settle in
+  // place, a gateway answers with the redirect URL to push.
+  const rentalPayment = ({ paymentMethod: method, failed }) => {
+    rentalPayMutate(
+      {
+        trip_id: failed.id,
+        payment_method: method === "cash_on_delivery" ? "cash_payment" : method,
+        payment_gateway:
+          method === "cash_on_delivery" ? "cash_payment" : method,
+        callback_url: `${window.location.origin}/rental/trip-status/${failed.id}`,
+        payment_platform: "web",
+        guest_id: getGuestId(),
+      },
+      {
+        onSuccess: (response) => {
+          if (method === "cash_on_delivery" || method === "wallet") {
+            const message = getApiMessage(response);
+            if (message) toast.success(message);
+            refetchFailedPayment();
+          } else {
+            // The gateway link rides inside the v4.2 `content`, so resolve it
+            // rather than pushing the payload itself.
+            const redirect = getRedirectLink(response);
+            if (!redirect) {
+              toast.error(t("Payment gateway did not return a redirect link."));
+              return;
+            }
+            followPaymentRedirect(redirect, router);
+          }
+          setOpenPaymentModal(false);
+        },
+        onError: onErrorResponse,
+      }
+    );
+  };
   const failedOrderPlace = () => {
     handleFailedOrderPlace({
       paymentMethod,
-      failPayment,
+      paymentFailedData: failPayment,
       handlePayment,
       paymentMethodUpdateMutation,
       walletPaymentMutation,
       profileInfo,
-      orderId: failPayment?.order_id,
+      orderId: failedPayment?.id,
       baseUrl,
       router,
+      rentalPayment,
     });
   };
 
@@ -369,8 +399,7 @@ const HomePageComponents = ({
                 // user dismisses the modal — the check at line 83
                 // (`incomplete_order_hidden_${orderId}`) then short-circuits
                 // any future renders for that order.
-                const hiddenOrderId =
-                  failPayment?.order_id ?? failPayment?.[0]?.order_id;
+                const hiddenOrderId = failedPayment?.id;
                 if (hiddenOrderId != null) {
                   localStorage.setItem(
                     `incomplete_order_hidden_${hiddenOrderId}`,
@@ -399,10 +428,10 @@ const HomePageComponents = ({
             paymentMethod={paymentMethod}
             zoneData={zoneData}
             configData={configData}
-            orderType={failPayment?.order_type}
+            orderType={failedPayment?.orderType}
             usePartialPayment={false}
             setOpenModel={setOpenPaymentModal}
-            forprescription={failPayment?.prescription_order}
+            forprescription={failedPayment?.prescriptionOrder}
             offlinePaymentOptions={offlinePaymentOptions}
             paymentMethodImage={null}
             setPaymentMethodImage={null}
@@ -414,7 +443,7 @@ const HomePageComponents = ({
             switchToWallet={null}
             customerData={{ data: profileInfo }}
             failed
-            payableAmount={failPayment?.order_amount}
+            payableAmount={failedPayment?.dueAmount}
             failedOrderPlace={failedOrderPlace}
           />
         </CustomModal>

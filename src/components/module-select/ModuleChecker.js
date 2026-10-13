@@ -3,10 +3,25 @@ import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
 import { setSelectedModule } from "redux/slices/utils";
 import useGetModule from "api-manage/hooks/react-query/useGetModule";
-import { getCurrentModuleId } from "helper-functions/getCurrentModuleType";
 import toast from "react-hot-toast";
 import { setModules } from "redux/slices/configData";
 import { getSavedModuleIdentifier, saveModuleParam } from "../../utils/moduleParamManager";
+
+// Whether the module currently in localStorage IS the one the URL asks for
+// (matched loosely by slug/module_type/id, same as the resolver below).
+// Used to decide whether a sync is even needed, instead of only checking
+// "is storage empty" — on a fast switch between modules, storage already
+// holds the PREVIOUS module, so an empty-only check never notices the
+// mismatch and every downstream query keeps reading the stale module.
+const storedModuleMatchesUrl = (identifier, storedModule) => {
+  if (!storedModule) return false;
+  const idStr = String(identifier);
+  return (
+    String(storedModule?.slug) === idStr ||
+    String(storedModule?.module_type) === idStr ||
+    String(storedModule?.id) === idStr
+  );
+};
 
 const ModuleChecker = () => {
   const router = useRouter();
@@ -51,74 +66,42 @@ const ModuleChecker = () => {
   // Sync URL -> Storage
   useEffect(() => {
     const moduleIdFromUrl = router.query.module || router.query.module_id;
-    const moduleIdFromStorage = getCurrentModuleId();
+    if (!moduleIdFromUrl) return;
 
-    if (moduleIdFromUrl && !moduleIdFromStorage) {
+    const storedModule = JSON.parse(localStorage.getItem("module") || "null");
+    if (!storedModuleMatchesUrl(moduleIdFromUrl, storedModule)) {
       refetch();
     }
   }, [router.query.module, router.query.module_id, refetch]);
 
   useEffect(() => {
     const moduleIdFromUrl = router.query.module || router.query.module_id;
-    const moduleIdFromStorage = getCurrentModuleId();
-   
-    if (data && moduleIdFromUrl && !moduleIdFromStorage) {
+    const storedModule = JSON.parse(localStorage.getItem("module") || "null");
+    const alreadyMatches = storedModuleMatchesUrl(moduleIdFromUrl, storedModule);
+
+    if (data && moduleIdFromUrl && !alreadyMatches) {
       const moduleIdStr = String(moduleIdFromUrl);
       const selectedModule = data.find(
         (item) =>
-          String(item?.slug) === moduleIdStr || String(item?.id) === moduleIdStr
+          String(item?.slug) === moduleIdStr ||
+          String(item?.module_type) === moduleIdStr ||
+          String(item?.id) === moduleIdStr
       );
       if (selectedModule) {
         localStorage.setItem("module", JSON.stringify(selectedModule));
         saveModuleParam(selectedModule?.id, selectedModule?.slug);
         dispatch(setSelectedModule(selectedModule));
-      } else {
+      }else{
         toast.error("Selected module is not available");
-        // GEMINI-MYTJ: Fallback to Shop module instead of bouncing to '/'
-        const fallback =
-          data.find((item) => item?.slug === "shop" || item?.module_type === "ecommerce") ||
-          data[0];
-        if (fallback) {
-          localStorage.setItem("module", JSON.stringify(fallback));
-          saveModuleParam(fallback?.id, fallback?.slug);
-          dispatch(setSelectedModule(fallback));
-          router.replace(
-            { pathname: "/home", query: { module: fallback?.slug || fallback?.id } },
-            undefined,
-            { shallow: true }
-          );
-        }
-      }
-    }
-  }, [data, router.query.module, router.query.module_id, dispatch]);
-
-  // GEMINI-MYTJ: When modules load with no module selected in URL or storage, default to Shop
-  useEffect(() => {
-    if (!router.isReady || typeof window === "undefined") return;
-    const moduleIdFromUrl = router.query.module || router.query.module_id;
-    const moduleIdFromStorage = getCurrentModuleId();
-
-    if (data?.length > 0 && !moduleIdFromUrl && !moduleIdFromStorage) {
-      const defaultModule =
-        data.find((item) => item?.slug === "shop" || item?.module_type === "ecommerce") ||
-        data[0];
-      if (defaultModule) {
-        localStorage.setItem("module", JSON.stringify(defaultModule));
-        saveModuleParam(defaultModule?.id, defaultModule?.slug);
-        dispatch(setSelectedModule(defaultModule));
-        const moduleIdentifier = defaultModule?.slug || defaultModule?.id;
-        const targetPath = router.pathname === "/" ? "/home" : router.pathname;
+        localStorage.removeItem("module");
         router.replace(
-          {
-            pathname: targetPath,
-            query: { ...router.query, module: String(moduleIdentifier) },
-          },
+          { pathname: "/", query: {} },
           undefined,
-          { shallow: true, scroll: false }
+          { shallow: true }
         );
       }
     }
-  }, [data, router.isReady, router.query.module, router.query.module_id, dispatch]);
+  }, [data, router.query.module, router.query.module_id, dispatch]);
 
   return null;
 };

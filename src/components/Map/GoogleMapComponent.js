@@ -62,7 +62,7 @@ const GoogleMapComponent = ({
       lat: parseFloat(location?.lat),
       lng: parseFloat(location?.lng),
     }),
-    [location?.lng, location?.lng]
+    [location?.lng, location?.lng],
   );
 
   const options = useMemo(
@@ -74,7 +74,7 @@ const GoogleMapComponent = ({
       disableDefaultUI: true,
       styles: theme.palette.mode === "dark" ? darkStyles : grayMapStyle,
     }),
-    [theme.palette.mode]
+    [theme.palette.mode],
   );
 
   const { isLoaded } = useJsApiLoader({
@@ -165,8 +165,15 @@ const GoogleMapComponent = ({
         bounds.extend(new window.google.maps.LatLng(path.lat, path.lng));
       });
 
-      // Fit the map to the new polygon bounds
-      if (!fromVendor) {
+      // Fit the map to the new polygon bounds. In the vendor flow, skip the fit
+
+      const lat = parseFloat(location?.lat);
+      const lng = parseFloat(location?.lng);
+      const markerInsideNewZone =
+        !isNaN(lat) &&
+        !isNaN(lng) &&
+        bounds.contains(new window.google.maps.LatLng(lat, lng));
+      if (!fromVendor || !markerInsideNewZone) {
         map.fitBounds(bounds);
       }
     }
@@ -206,6 +213,20 @@ const GoogleMapComponent = ({
     map.setZoom(targetZoom);
     setZoom(targetZoom);
   }, [zoomToLocationToken]);
+
+  // Expanding/shrinking resizes the map container; Google Maps leaves the
+  // newly exposed area blank until a "resize" event fires. Trigger it after
+  // the CSS resize settles and restore the center (resize keeps the old
+  // top-left corner otherwise).
+  useEffect(() => {
+    if (!map) return;
+    const id = setTimeout(() => {
+      const prevCenter = map.getCenter?.();
+      window.google?.maps?.event?.trigger(map, "resize");
+      if (prevCenter) map.setCenter(prevCenter);
+    }, 200);
+    return () => clearTimeout(id);
+  }, [expanded, map]);
 
   const MapContent = (
     <Stack
@@ -253,7 +274,10 @@ const GoogleMapComponent = ({
           <RemoveIcon color="primary" />
         </IconButton>
       </Stack>
-      {(!mapmodal || expanded) && (
+      {/* In mapmodal mode the expand/shrink control lives in MapModal's
+          bottom-right control stack (also available in inline fullscreen), so
+          the in-map copy is only for standalone consumers. */}
+      {!mapmodal && (
         <Stack
           position="absolute"
           zIndex={2}
@@ -382,8 +406,14 @@ const GoogleMapComponent = ({
     </Stack>
   );
 
+  // In MapModal (`mapmodal`) the parent wrapper itself goes fullscreen when
+  // expanded, so render the map INLINE — its search bar and close button float
+  // above the map. The old nested <Modal> here sat at MUI's default z-index
+  // (1300), *below* MapModal's 1600, so the fullscreen map was hidden behind a
+  // white wrapper. Inline also keeps the map instance mounted (no remount →
+  // no blank tiles). Other consumers keep the nested-Modal fullscreen.
   return isLoaded ? (
-    expanded ? (
+    expanded && !mapmodal ? (
       <Modal open={expanded} onClose={() => setExpanded(false)}>
         <Stack
           sx={{

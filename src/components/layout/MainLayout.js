@@ -1,27 +1,38 @@
-import { useMediaQuery, useTheme } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
+import { ModuleTypes } from "helper-functions/moduleTypes";
+import useScrollDirection from "hooks/useScrollDirection";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
-import React, { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useGetModule from "../../api-manage/hooks/react-query/useGetModule";
-import { setSelectedModule, setOpenLocationModal } from "../../redux/slices/utils";
 import { setModules } from "../../redux/slices/configData";
-import { saveModuleParam } from "../../utils/moduleParamManager";
+import { setSelectedModule } from "../../redux/slices/utils";
 import { CustomStackFullWidth } from "../../styled-components/CustomStyles.style";
 import FooterComponent from "../footer";
 import HeaderComponent from "../header";
 import BottomNav from "../header/BottomNav";
 import { MainLayoutRoot } from "./LandingLayout";
-import useGetLandingPage from "api-manage/hooks/react-query/useGetLandingPage";
-import useScrollDirection from "hooks/useScrollDirection";
-import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
-import { ModuleTypes } from "helper-functions/moduleTypes";
-import SearchProductModal from "../home/search/SearchProductModal";
-import FloatingCartButton from "../header/new-navbar/FloatingCartButton";
 
-// GEMINI-MYTJ: Dynamic import for location picker modal
-const MapModal = dynamic(() => import("../Map/MapModal"));
+// import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
+// import { ModuleTypes } from "helper-functions/moduleTypes";
+import SearchProductModal from "../home/search/SearchProductModal";
+// import { MainLayoutRoot } from "./LandingLayout";
+import FloatingCartButton from "../header/new-navbar/FloatingCartButton";
+import HappyHourBanner from "../happy-hour/HappyHourBanner";
+
+const HAPPY_HOUR_FLOATING_ROUTES = new Set(["/home"]);
+const HAPPY_HOUR_BANNER_BOTTOM = 65;
+
+const RENTAL_COMPACT_DESKTOP_HEADER_ROUTES = new Set([
+  "/rental/checkout",
+  "/rental/cart",
+  "/rental/trip-status/[id]",
+  "/rental/vehicle/[id]",
+  "/rental/provider/[id]",
+  "/rental/vehicle-search",
+]);
 
 // Routes that own their own sticky/in-flow header on mobile (no extra mt needed).
 // Adding a route here removes the default mobile navbar offset on that page.
@@ -44,6 +55,8 @@ const FULL_BLEED_MOBILE_ROUTES = new Set([
   "/home/[...slug]",
   "/home/category/[slug]",
   "/home/wishlist",
+  "/campaigns",
+  "/campaigns/[id]",
   "/product/[id]",
   "/parcel-delivery-info",
   "/rental/vehicle-search",
@@ -54,37 +67,64 @@ const FULL_BLEED_MOBILE_ROUTES = new Set([
   "/rental/provider/popular",
   "/rental/provider/[id]",
   "/rental/trip-status/[id]",
+  "/service/service-details/[id]",
+  "/service/provider/[id]",
+  "/service/checkout",
+  "/service/checkout/custom-service",
+  "/service/custom-service/create",
+  "/service/custom-service/details/[id]",
+  "/service/all-providers",
 ]);
 
-const getMobileMarginTop = ({ pathname, currentModuleType, isCollapsed }) => {
+// Constant per route/module — sized for the EXPANDED header. The scroll-away
+// collapse is a pure transform on the fixed AppBar (see NavBar.style.js) and
+// never changes layout, so the content offset must not react to it either.
+const getMobileMarginTop = ({ pathname, currentModuleType }) => {
   if (FULL_BLEED_MOBILE_ROUTES.has(pathname)) return "0px";
+  // BOGO list & details render only the compact address + cart header on
+  // mobile (no module tabs, search bar or section chips), so they need a much
+  // smaller offset than the home header's default 11.9rem — otherwise a large
+  // empty gap appears above the content.
+  if (pathname === "/bogo-list" || pathname === "/bogo-list/[id]") {
+    return "3.25rem";
+  }
   if (currentModuleType === ModuleTypes.RIDE) return "4.9rem";
   if (currentModuleType === ModuleTypes.RENTAL) {
     return pathname?.startsWith("/rental") ? "3rem" : "6.3rem";
   }
   if (currentModuleType === ModuleTypes.PARCEL) return "7.8rem";
-  return isCollapsed ? "10rem" : "11.9rem";
+  return "11.9rem";
 };
 
-const MainLayout = ({ children, configData, landingPageData }) => {
+const MainLayout = ({ children, configData, onHappyHourActiveChange }) => {
   const [rerenderUi, setRerenderUi] = useState(false);
   const { data, refetch } = useGetModule();
   const theme = useTheme();
   const isSmall = useMediaQuery("(max-width:1180px)");
-  const { direction, scrollY } = useScrollDirection({ threshold: 8 });
-  const isCollapsed = isSmall && scrollY > 40 && direction === "down";
   const router = useRouter();
   const { page } = router.query;
   const dispatch = useDispatch();
-  
-  const { landingPageData: reduxLandingPageData } = useSelector((state) => state.configData);
-  // GEMINI-MYTJ: Extract selectedModule and openLocationModal from utilsData
-  const { selectedModule, openLocationModal } = useSelector(
-    (state) => state.utilsData || {}
+  const [happyHourActive, setHappyHourActive] = useState(false);
+  const isHappyHourRoute = HAPPY_HOUR_FLOATING_ROUTES.has(router.pathname);
+  const handleHappyHourActiveChange = useCallback(
+    (active) => {
+      setHappyHourActive(active);
+      onHappyHourActiveChange?.(active);
+    },
+    [onHappyHourActiveChange],
   );
-
   useEffect(() => {
-    if (router.pathname === "/home") {
+    // `configData.modules` is redux-persist-blacklisted, so a hard reload of
+    // any of these routes starts with an empty module list — and since it's
+    // only ever dispatched from the query below, the navbar's module tab bar
+    // stays hidden (`renderModuleBar` bails on `!modules?.length`) unless we
+    // explicitly refetch here too, not just on /home.
+    if (
+      router.pathname === "/home" ||
+      router.pathname === "/bogo-list" ||
+      router.pathname === "/bogo-list/[id]" ||
+      router.pathname === "/search"
+    ) {
       refetch();
     }
   }, []);
@@ -92,25 +132,8 @@ const MainLayout = ({ children, configData, landingPageData }) => {
   useEffect(() => {
     if (data?.length) {
       dispatch(setModules(data));
-      // GEMINI-MYTJ: Default to Shop module if none selected in localStorage or redux
-      const stored =
-        typeof window !== "undefined"
-          ? localStorage.getItem("module")
-          : null;
-      if (!stored && !selectedModule) {
-        const defaultMod =
-          data.find(
-            (item) =>
-              item?.slug === "shop" || item?.module_type === "ecommerce"
-          ) || data[0];
-        if (defaultMod) {
-          localStorage.setItem("module", JSON.stringify(defaultMod));
-          saveModuleParam(defaultMod?.id, defaultMod?.slug);
-          dispatch(setSelectedModule(defaultMod));
-        }
-      }
     }
-  }, [data, selectedModule, dispatch]);
+  }, [data]);
   // if (data) {
   // 	const selectedModuleType = JSON.parse(
   // 		localStorage.getItem("module")
@@ -141,6 +164,9 @@ const MainLayout = ({ children, configData, landingPageData }) => {
   // 		}
   // 	}
   // }
+  const selectedModule = useSelector(
+    (state) => state.utilsData?.selectedModule,
+  );
   const queryModuleType =
     typeof router.query.module === "string" ? router.query.module : null;
   const currentModuleType =
@@ -148,13 +174,6 @@ const MainLayout = ({ children, configData, landingPageData }) => {
     getCurrentModuleType() ??
     queryModuleType ??
     null;
-  const { data: landing, refetch: landingRefetch } = useGetLandingPage();
-  useEffect(() => {
-    if (!landingPageData && !reduxLandingPageData) {
-      landingRefetch();
-    }
-  }, []);
-
   // ── Cross-tab module sync ──
   // The active module is shared across the whole browser (localStorage "module").
   // When another tab switches modules the `storage` event fires here, so this tab
@@ -191,6 +210,12 @@ const MainLayout = ({ children, configData, landingPageData }) => {
     return () => window.removeEventListener("storage", handleModuleStorage);
   }, [router, dispatch]);
 
+  // Mirrors NewNavBar's renderModuleBar condition.
+  const hasDesktopModuleBar =
+    router.pathname === "/home" ||
+    router.pathname?.startsWith("/home/") ||
+    router.pathname?.startsWith("/search");
+
   return (
     <MainLayoutRoot justifyContent="space-between" key={rerenderUi}>
       <header>
@@ -202,52 +227,67 @@ const MainLayout = ({ children, configData, landingPageData }) => {
             xs: getMobileMarginTop({
               pathname: router.pathname,
               currentModuleType,
-              isCollapsed,
             }),
-            md: router.pathname?.startsWith("/rental")
+            md: RENTAL_COMPACT_DESKTOP_HEADER_ROUTES.has(router.pathname)
+              ? "5.4rem"
+              : router.pathname?.startsWith("/rental")
               ? "10rem"
-              : ["/profile", "/checkout"].includes(router.pathname)
-              ? "4.4rem"
-              : "5.4rem",
-            lg: router.pathname?.startsWith("/rental")
+              : hasDesktopModuleBar
+              ? "5.4rem"
+              : "4rem",
+            lg: RENTAL_COMPACT_DESKTOP_HEADER_ROUTES.has(router.pathname)
+              ? "5.4rem"
+              : router.pathname?.startsWith("/rental")
               ? "10rem"
-              : ["/profile", "/checkout"].includes(router.pathname)
-              ? "4.4rem"
-              : "6.4rem",
+              : hasDesktopModuleBar
+              ? "6.4rem"
+              : "4rem",
           },
-          transition: "margin-top 0.25s ease",
         }}
       >
-        <CustomStackFullWidth sx={{ minHeight: { xs: "auto", md: "70vh" } }}>
+        {/* Reserve viewport height while content is still fetching so the
+            footer stays below the fold on mobile reload instead of flashing up
+            into an empty (auto-height) content area. */}
+        <CustomStackFullWidth sx={{ minHeight: { xs: "70dvh", md: "70vh" } }}>
           {children}
         </CustomStackFullWidth>
       </CustomStackFullWidth>
       <footer>
-        <FooterComponent
-          configData={configData}
-          landingPageData={landingPageData ?? reduxLandingPageData ?? landing}
-        />
+        <FooterComponent configData={configData} />
       </footer>
+      {isHappyHourRoute && (
+        <Box
+          sx={{
+            display: happyHourActive ? { xs: "block", md: "none" } : "none",
+            position: "fixed",
+            bottom: `${HAPPY_HOUR_BANNER_BOTTOM}px`,
+            left: 0,
+            right: 0,
+            width: "100%",
+            zIndex: 1081,
+          }}
+        >
+          <HappyHourBanner
+            compact
+            onActiveChange={handleHappyHourActiveChange}
+          />
+        </Box>
+      )}
       {isSmall &&
         page !== "parcel" &&
         router.pathname !== "/store/[id]" &&
-        router.pathname !== "/product/[id]" && <BottomNav />}
+        router.pathname !== "/product/[id]" &&
+        router.pathname !== "/service/provider/[id]" &&
+        router.pathname !== "/service/service-details/[id]" && <BottomNav />}
       <SearchProductModal />
       <FloatingCartButton />
-      {/* GEMINI-MYTJ: Global Location Modal for hyperlocal modules and checkout */}
-      {openLocationModal && (
-        <MapModal
-          open={openLocationModal}
-          handleClose={() => dispatch(setOpenLocationModal(false))}
-          disableAutoFocus
-        />
-      )}
     </MainLayoutRoot>
   );
 };
 
 MainLayout.propTypes = {
   children: PropTypes.node,
+  onHappyHourActiveChange: PropTypes.func,
 };
 
 export default React.memo(MainLayout);

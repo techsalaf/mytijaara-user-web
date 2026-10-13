@@ -47,11 +47,11 @@ const primary = {
   light: "#E8F5EE",
   dark: "#005A32",
   deep: "#004D2B",
-  contrastText: "#FFFFFF",
-  semiLight: "#F2FAF6",
+  contrastText: neutral[900],
+  semiLight: "#E4FFF3",
   overLay: "#000000",
-  customType2: "#005A32",
-  lite: "rgba(0, 107, 60, 0.10)",
+  customType2: "#3BB77E",
+  lite: "rgba(3, 157, 85, 0.1)",
   customType3: "#29CE00",
   icon: "#ffffff",
 };
@@ -112,29 +112,41 @@ const text = {
   disabled: "rgba(255, 255, 255, 0.48)",
   custom: "#ede8e8",
   customText1: "#EDF2F7",
+  info: "#3979E0",
+  link: "#2A61BA",
 };
 const footer = {
-  inputButton: "#E8F5EE",
-  inputButtonHover: "#006B3C",
-  bottom: "rgba(0, 77, 43, 0.30)",
+  inputButton: "#BBFFDF",
+  inputButtonHover: "#67907e",
+  bottom: "rgba(0, 98, 52, 0.3)",
   foodBottom: "#686B78",
   appDownloadButtonBg: "#1A1A1A",
-  appDownloadButtonBgGray: "#004D2B",
+  appDownloadButtonBgGray: "#3E594D",
   foodFooterBg: "#414141",
 };
 const customColor = {
   textGray: "#9c9c9c",
   textGrayDeep: "#787676",
-  buyButton: "#D4AF37",
-  parcelWallet: "#004D2B",
-  starAmber: "#D4AF37",
+  buyButton: "#F9E091",
+  parcelWallet: "#8B3FFD",
+  rebookIcon: "#6464EE",
+  starAmber: "#F59E0B",
   vegGreen: "#4caf50",
   vegIcon: "#71B63A",
   textNeutral: "#e0e0e0",
-  newBadge: "#D4AF37",
+  newBadge: "#c9a100",
   ratingCount: "#888888",
   deliveryText: "#a0a0a0",
   tagBg: "#3a3a3a",
+  proBannerBg: "#2D1F4A",      // Pro plan banner background (dark)
+  proSubscribeText: "#A78BFA", // Pro plan subscribe link text (dark)
+  proBannerBlueBg: "#3A5CD4", // Pro plan blue banner background (dark)
+  statusPendingBg: "#1b2d4a",
+  statusPendingText: "#7eb3f7",
+  statusReviewBg: "#1a3529",
+  statusReviewText: "#4cd680",
+  statusCancelledBg: "#3a2f1f",
+  statusCancelledText: "#e0a94c",
 };
 const whiteContainer = {
   main: "#ffffff",
@@ -144,6 +156,26 @@ const pink = {
 };
 const toolTipColor = "#88908C";
 const paperBoxShadow = "#E5EAF1";
+const couponBg = {
+  pro: "#1a2b3c",
+  discount: "#2d2200",
+  ticket: "#2d1515",
+};
+const happyHourBanner = {
+  bg: "rgba(236, 34, 31, 0.14)",
+  timerBg: "#EC221F",
+  timerColon: "#FF8A87",
+  timerColonWarm: "#E0A23D",
+};
+const progressOffer = {
+  bg: "rgba(229, 160, 0, 0.14)",
+  track: "rgba(255, 255, 255, 0.06)",
+  fill: "#e8972a",
+  chip: "#ff4444",
+};
+const bogoBanner = {
+  bg: "rgba(86, 66, 240, 0.14)",
+};
 export const darkThemeOptions = {
   components: {
     MuiUseMediaQuery: { defaultProps: { noSsr: true } }, // ⚡ Fix hydration
@@ -273,6 +305,10 @@ export const darkThemeOptions = {
     roundStackOne,
     roundStackTwo,
     toolTipColor,
+    couponBg,
+    happyHourBanner,
+    progressOffer,
+    bogoBanner,
   },
   shadows: [
     "none",

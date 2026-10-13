@@ -25,7 +25,10 @@ import Stores from "../../stores";
 import TrendingBites from "../../trending-bites";
 import VisitAgain from "../../visit-again";
 import LastOrdersSection from "../food/LastOrdersSection";
-import TopOfferNotifyBanner from "../food/TopOfferNotifyBanner";
+import TopOfferNHappyHourSection from "../shared/TopOfferNHappyHourSection";
+import BogoBanner from "components/bogo/BogoBanner";
+import useGetBogoHome from "api-manage/hooks/react-query/bogo/useGetBogoHome";
+import BundleItemsSection from "../shared/BundleItemsSection";
 import TodaysDeals from "../grocery/TodaysDeals";
 import PharmacyStaticBanners from "../pharmacy/pharmacy-banners/PharmacyStaticBanners";
 import CampaignBanners from "./CampaignBanners";
@@ -107,9 +110,7 @@ const Shop = ({ configData, routeSection }) => {
           <PharmacyStaticBanners />
         </CustomContainer>
       </S> */}
-      <CustomContainer>
-        <Banners />
-      </CustomContainer>
+      <CustomContainer>{/* <Banners /> */}</CustomContainer>
 
       <S>
         <CustomContainer noMobilePadding>
@@ -119,7 +120,7 @@ const Shop = ({ configData, routeSection }) => {
 
       <S>
         <CustomContainer>
-          <TopOfferNotifyBanner />
+          <TopOfferNHappyHourSection />
         </CustomContainer>
       </S>
 
@@ -164,9 +165,13 @@ const Shop = ({ configData, routeSection }) => {
           />
         </CustomContainer>
       </S>
-      {configData?.repeat_order_option && token ? (
+      <S>
+        <CustomContainer>
+          <BogoBanner />
+        </CustomContainer>
+      </S>
+      {token ? (
         <S>
-          {/* 🔥 new feature your last order - user logged in wise */}
           <CustomContainer noMobilePadding={true}>
             <LastOrdersSection />
           </CustomContainer>
@@ -217,6 +222,12 @@ const Shop = ({ configData, routeSection }) => {
       </S>
 
       <S>
+        <CustomContainer>
+          <BundleItemsSection />
+        </CustomContainer>
+      </S>
+
+      <S>
         <CustomContainer noMobilePadding>
           <MobileAppBanner />
         </CustomContainer>
@@ -262,7 +273,11 @@ const Shop = ({ configData, routeSection }) => {
     </Stack>
   );
 
-  const ecommerceSections = getEcommerceSections();
+  const { data: bogoHome } = useGetBogoHome();
+  const ecommerceSections = getEcommerceSections(
+    configData,
+    !!bogoHome?.is_live,
+  );
   return (
     <ModuleHomeSidebarLayout
       overviewContent={overviewContent}

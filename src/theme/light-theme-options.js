@@ -35,31 +35,31 @@ const background = {
 const divider = "#E6E8F0";
 
 const primary = {
-  main: "#006B3C",
-  deep: "#004D2B",
-  light: "#E8F5EE",
-  dark: "#005A32",
-  semiLight: "#F2FAF6",
+  main: "#039D55",
+  deep: "#026034",
+  light: "#EBFDF2",
+  dark: "#1c6641",
+  semiLight: "#E4FFF3",
   contrastText: "#FFFFFF",
-  customType1: "#006B3C",
-  customType2: "#005A32",
+  customType1: "#0DCB72",
+  customType2: "#3BB77E",
   customType3: "#29CE00",
   overLay: "#000000",
-  lite: "rgba(0, 107, 60, 0.10)",
-  icon: "#006B3C",
+  lite: "rgba(3, 157, 85, 0.1)",
+  icon: "#039D55",
 };
 const moduleTheme = {
-  pharmacy: "#006B3C",
-  ecommerce: "#D4AF37",
-  food: "#005A32",
-  parcel: "#A88418",
+  pharmacy: "#039D55",
+  ecommerce: "#039D55",
+  food: "#039D55",
+  parcel: "#039D55",
 };
-const horizontalCardBG = "#E8F5EE";
+const horizontalCardBG = "#E4FFF3";
 
 const secondary = {
-  main: "#D4AF37",
-  light: "#F5E6A8",
-  dark: "#A88418",
+  main: "#10B981",
+  light: "#3FC79A",
+  dark: "#0B815A",
   contrastText: "#FFFFFF",
 };
 
@@ -113,31 +113,41 @@ const text = {
   disabled: "rgba(55, 65, 81, 0.48)",
   custom: "#3F3F3F",
   customText1: "#4B5563",
+  info: "#3979E0",
+  link: "#2A61BA",
 };
 
 const footer = {
-  inputButton: "#E8F5EE",
-  inputButtonHover: "#006B3C",
-  bottom: "rgba(0, 77, 43, 0.30)",
+  inputButton: "#BBFFDF",
+  inputButtonHover: "#6dcfa6",
+  bottom: "rgba(0, 98, 52, 0.3)",
   foodBottom: "#686B78",
   appDownloadButtonBg: "#1A1A1A",
-  appDownloadButtonBgGray: "#004D2B",
+  appDownloadButtonBgGray: "#3E594D",
   appDownloadButtonBgHover: "#4f4f4f",
   foodFooterBg: "#414141",
 };
 const customColor = {
   textGray: "#9c9c9c",
   textGrayDeep: "#787676",
-  buyButton: "#D4AF37",
-  parcelWallet: "#004D2B",
-  starAmber: "#D4AF37", // star/rating color
+  buyButton: "#F9E091",
+  parcelWallet: "#8B3FFD",
+  rebookIcon: "#6464EE",
+  starAmber: "#F59E0B", // star/rating color
   vegGreen: "#4caf50", // veg indicator green
   vegIcon: "#71B63A", // veg SVG icon fill
   textNeutral: "#303030", // Figma text-neutral-default (item name)
-  newBadge: "#D4AF37", // "New" store badge bg (Figma warning)
+  newBadge: "#e8b931", // "New" store badge bg (Figma warning)
   ratingCount: "#949494", // rating review count color (Figma text-neutral-tertiary)
   deliveryText: "#5a5a5a", // delivery info text (Figma text-neutral-secondary)
   tagBg: "#e0e0e0", // "+N" overflow badge, dividers (Figma background-default-tertiary)
+  statusPendingBg: "#DBE9FF",
+  statusPendingText: "#224A8A",
+  statusReviewBg: "#CFF7D3",
+  statusReviewText: "#009951",
+  statusCancelledBg: "#FDF0DC",
+  statusCancelledText: "#B5680A",
+  proBannerBlueBg: "#3979E0",
 };
 const whiteContainer = {
   main: "#ffffff",
@@ -147,6 +157,26 @@ const pink = {
 };
 const foodCardColor = "#FFF6EF";
 const paperBoxShadow = "#E5EAF1";
+const couponBg = {
+	pro: "#F1F6FD",
+	discount: "#FFFBEB",
+	ticket: "#FEE9E7",
+};
+const happyHourBanner = {
+	bg: "#FEE9E7",
+	timerBg: "#EC221F",
+	timerColon: "#900B09",
+	timerColonWarm: "#BF6A02",
+};
+const progressOffer = {
+	bg: "#FFF1C2",
+	track: "#FFFBEB",
+	fill: "#BF6A02",
+	chip: "#EC221F",
+};
+const bogoBanner = {
+	bg: "#DBE9FF",
+};
 const roundStackOne = "rgba(255, 255, 255, 0.04)";
 const roundStackTwo = "rgba(255, 255, 255, 0.06)";
 const toolTipColor = neutral[1000];
@@ -280,6 +310,10 @@ export const lightThemeOptions = {
     roundStackOne,
     roundStackTwo,
     toolTipColor,
+    couponBg,
+    happyHourBanner,
+    progressOffer,
+    bogoBanner,
   },
   shadows: [
     "none",

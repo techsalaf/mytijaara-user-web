@@ -3,7 +3,10 @@ import MainApi from "../../../MainApi";
 import { get_search_page_data } from "api-manage/ApiRoutes";
 import { onSingleErrorResponse } from "../../../api-error-response/ErrorResponses";
 import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
+import { ModuleTypes } from "helper-functions/moduleTypes";
 import { getGuestId } from "helper-functions/getToken";
+import { get_service_search_page_data } from "components/home/module-wise-components/service/service-api-manage/ApiRoutes";
+import { getApiCollection, getApiContent } from "../../../getApiContent";
 
 const getSearch = async (pageParams) => {
   const {
@@ -22,8 +25,8 @@ const getSearch = async (pageParams) => {
     category_ids,
     type,
     quick_action,
+    store_id,
   } = pageParams;
-
   const selectedCategoriesId =
     selectedCategoriesIds?.[0] !== "undefined" && selectedCategoriesIds?.length
       ? JSON.stringify(selectedCategoriesIds)
@@ -33,6 +36,9 @@ const getSearch = async (pageParams) => {
       ? JSON.stringify(selectedBrands)
       : [];
 
+  const guestId = getGuestId();
+
+  const moduleType = getCurrentModuleType();
   const raw = {
     name: data_type === "searched" ? searchValue : "",
     offset: pageParam ?? offset ?? 0,
@@ -49,6 +55,7 @@ const getSearch = async (pageParams) => {
     rating_count: rating,
     type,
     quick_action,
+    store_id: store_id,
   };
 
   const query = new URLSearchParams(
@@ -58,7 +65,32 @@ const getSearch = async (pageParams) => {
       ),
     ),
   );
-  const guestId = getGuestId();
+
+  // Service module uses its own search endpoint which returns services + providers
+  if (moduleType === ModuleTypes.SERVICE) {
+    const serviceQuery = query;
+    const { data } = await MainApi.get(
+      `${get_service_search_page_data}?${serviceQuery.toString()}`,
+    );
+    // Responses are wrapped in the v4.2 envelope (`{ content: {...} }`) —
+    // unwrap before reading products/stores, same as the non-service path
+    // below via getApiCollection.
+    const content = getApiContent(data) ?? {};
+    if (currentTab === 0) {
+      return {
+        ...content,
+        products: content?.products ?? [],
+        total_count_item:
+          content?.total_count_item ?? content?.products?.length ?? 0,
+      };
+    }
+    return {
+      ...content,
+      stores: content?.stores ?? [],
+      total_count_store:
+        content?.total_count_store ?? content?.stores?.length ?? 0,
+    };
+  }
 
   const { data } = await MainApi.get(
     `${get_search_page_data}?${query.toString()}`,
@@ -66,7 +98,7 @@ const getSearch = async (pageParams) => {
       headers: guestId ? { guestId: guestId } : {},
     },
   );
-  return data;
+  return getApiCollection(data, ["products", "stores"]);
 };
 
 export default function useGetSearchPageData(
@@ -89,6 +121,7 @@ export default function useGetSearchPageData(
       getPreviousPageParam: (firstPage, allPages) => firstPage.prevCursor,
       retry: 1,
       enabled,
+      keepPreviousData: true,
       onError: onSingleErrorResponse,
       onSuccess: handleSuccess,
     },

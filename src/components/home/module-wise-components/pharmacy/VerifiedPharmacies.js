@@ -18,7 +18,7 @@ const SliderWrapper = styled(CustomBoxFullWidth)(({ theme }) => ({
   },
 }));
 
-const VerifiedPharmacies = () => {
+const VerifiedPharmacies = ({ title, subtitle }) => {
   const { t } = useTranslation();
   const slider = useRef(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -39,16 +39,78 @@ const VerifiedPharmacies = () => {
     dots: false,
     infinite: false,
     speed: 500,
-    slidesToShow: 4,
+    slidesToShow: 3.5,
     slidesToScroll: 1,
     swipeToSlide: true,
     arrows: false,
     responsive: [
-      { breakpoint: 1450, settings: { slidesToShow: 4, slidesToScroll: 1 , swipeToSlide: true} },
-      { breakpoint: 1024, settings: { slidesToShow: 3, slidesToScroll: 1 , swipeToSlide: true} },
-      { breakpoint: 760, settings: { slidesToShow: 2, slidesToScroll: 1 , swipeToSlide: true} },
-      { breakpoint: 480, settings: { slidesToShow: 1.4, slidesToScroll: 1 , swipeToSlide: true} },
-      { breakpoint: 340, settings: { slidesToShow: 1.2, slidesToScroll: 1 , swipeToSlide: true} },
+      {
+        breakpoint: 1450,
+        settings: {
+          slidesToShow: 3.5,
+          slidesToScroll: 1,
+          infinite: false,
+          swipeToSlide: true,
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          infinite: false,
+          swipeToSlide: true,
+        },
+      },
+      {
+        breakpoint: 760,
+        settings: {
+          slidesToShow: 2.8,
+          slidesToScroll: 2,
+          infinite: false,
+          swipeToSlide: true,
+        },
+      },
+      {
+        breakpoint: 695,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          swipeToSlide: true,
+          initialSlide: 2,
+          infinite: false,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          swipeToSlide: true,
+          initialSlide: 2,
+          infinite: false,
+        },
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1.4,
+          slidesToScroll: 1,
+          swipeToSlide: true,
+          initialSlide: 1,
+          infinite: false,
+        },
+      },
+      {
+        breakpoint: 340,
+        settings: {
+          slidesToShow: 1.2,
+          slidesToScroll: 1,
+          swipeToSlide: true,
+          initialSlide: 1,
+          infinite: false,
+        },
+      },
     ],
   };
 
@@ -62,7 +124,7 @@ const VerifiedPharmacies = () => {
         sliderRef={slider}
         currentSlide={currentSlide}
         totalSlides={stores.length}
-        slidesToShow={4}
+        slidesToShow={3.5}
         heading={
           isLoading ? (
             <Box>
@@ -80,7 +142,7 @@ const VerifiedPharmacies = () => {
                   letterSpacing: "-1.2px",
                 }}
               >
-                {t("Verified Pharmacies")}
+                {title ? title : t("Verified Pharmacies")}
               </Typography>
               <Typography
                 sx={{
@@ -91,7 +153,7 @@ const VerifiedPharmacies = () => {
                   mt: "4px",
                 }}
               >
-                {t("Trust & secure buying experience.")}
+                {subtitle ? subtitle : t("Trust & secure buying experience.")}
               </Typography>
             </Box>
           )

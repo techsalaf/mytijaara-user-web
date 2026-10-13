@@ -11,6 +11,7 @@ import { createTheme } from "theme";
 import CssBaseline from "@mui/material/CssBaseline";
 import { RTL } from "components/rtl";
 import { Toaster } from "react-hot-toast";
+import { getServerSideProps } from "./index";
 import { SettingsConsumer, SettingsProvider } from "contexts/settings-context";
 import "../src/language/i18n";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -24,7 +25,6 @@ import { useEffect } from "react";
 import ModuleChecker from "../src/components/module-select/ModuleChecker";
 import ProSubscriptionExpiredModal from "../src/components/pro-plan/ProSubscriptionExpiredModal";
 import App from "next/app";
-import { Analytics } from "@vercel/analytics/react";
 
 Router.events.on("routeChangeStart", nProgress.start);
 Router.events.on("routeChangeError", nProgress.done);
@@ -37,6 +37,13 @@ const queryClient = new QueryClient({
     queries: {
       cacheTime: 1000 * 60 * 5, // 5 minutes
       staleTime: 1000 * 60 * 2, // 2 minutes
+      // react-query v3 refetches every active query whenever the tab regains
+      // focus. On the home page that is ~20 requests each time the user
+      // alt-tabs back, for catalogue data that changes far more slowly than
+      // the 2 minute staleTime above.
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
     },
   },
 });
@@ -100,12 +107,12 @@ function MyApp(props) {
           {/* <ReactQueryDevtools initialIsOpen={false} position="bottom-right" /> */}
         </QueryClientProvider>
       </CacheProvider>
-      <Analytics />
     </>
   );
 }
 
 export default MyApp;
+export { getServerSideProps };
 
 const getThemeFromCookieHeader = (cookieHeader = "") => {
   const match = cookieHeader.match(/(?:^|;\s*)themeMode=(dark|light)(?:;|$)/);

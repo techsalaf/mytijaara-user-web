@@ -17,6 +17,7 @@ import OrderDetailsModal from "../../../order-details-modal/OrderDetailsModal";
 import Banners from "../../banners";
 import FeaturedCategories from "../../featured-categories";
 import RunningCampaigns from "../../running-campaigns";
+import PromotionalBanner from "../../PromotionalBanner";
 import Stores from "../../stores";
 import TrendingBites from "../../trending-bites";
 import VisitAgain from "../../visit-again";
@@ -27,6 +28,11 @@ import PharmacySearchBanner from "./PharmacySearchBanner";
 import { getPharmacySections } from "./pharmacySectionsConfig";
 import SelfCareOTCSection from "./SelfCareOTCSection";
 import VerifiedPharmacies from "./VerifiedPharmacies";
+import isVerifiedStoreEnabled from "helper-functions/isVerifiedStoreEnabled";
+import HappyHourSection from "components/happy-hour/HappyHourSection";
+import BogoBanner from "components/bogo/BogoBanner";
+import useGetBogoHome from "api-manage/hooks/react-query/bogo/useGetBogoHome";
+import BundleItemsSection from "../shared/BundleItemsSection";
 
 const S = ({ children }) => children ?? null;
 
@@ -37,6 +43,12 @@ const Pharmacy = ({ configData, routeSection }) => {
   const { orderDetailsModalOpen } = useSelector((state) => state.utilsData);
   const [storeData, setStoreData] = React.useState([]);
   const { data, refetch, isLoading } = useGetOtherBanners();
+  // The other-banners query is enabled:false — fetch it here so the
+  // promotional banner doesn't depend on another page priming the cache.
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const {
     data: visitedStores,
     refetch: refetchVisitAgain,
@@ -93,9 +105,8 @@ const Pharmacy = ({ configData, routeSection }) => {
         </CustomContainer>
       </S>
 
-      {configData?.repeat_order_option && token ? (
+      {token ? (
         <S>
-          {/* 🔥 new feature your last order - user logged in wise */}
           <CustomContainer noMobilePadding={true}>
             <LastOrdersSection title={t("Refill Your Medicine")} />
           </CustomContainer>
@@ -104,6 +115,12 @@ const Pharmacy = ({ configData, routeSection }) => {
       <S>
         <CustomContainer>
           <Banners />
+        </CustomContainer>
+      </S>
+
+      <S>
+        <CustomContainer>
+          <HappyHourSection />
         </CustomContainer>
       </S>
 
@@ -141,7 +158,11 @@ const Pharmacy = ({ configData, routeSection }) => {
           />
         </CustomContainer>
       </S>
-
+      <S>
+        <CustomContainer>
+          <BogoBanner />
+        </CustomContainer>
+      </S>
       <S>
         <CustomContainer>
           <RecommendedStore title={t("Recommended Pharmacies")} />
@@ -164,15 +185,23 @@ const Pharmacy = ({ configData, routeSection }) => {
         </CustomContainer>
       </S>
 
+      {isVerifiedStoreEnabled(configData) && (
+        <S>
+          {/* new feature */}
+          <CustomContainer
+            sx={{
+              paddingLeft: "16px !important",
+              paddingRight: "0 !important",
+            }}
+          >
+            <VerifiedPharmacies />
+          </CustomContainer>
+        </S>
+      )}
+
       <S>
-        {/* new feature */}
-        <CustomContainer
-          sx={{
-            paddingLeft: "16px !important",
-            paddingRight: "0 !important",
-          }}
-        >
-          <VerifiedPharmacies />
+        <CustomContainer>
+          <BundleItemsSection />
         </CustomContainer>
       </S>
 
@@ -206,6 +235,12 @@ const Pharmacy = ({ configData, routeSection }) => {
 
       <S>
         <CustomContainer>
+          <PromotionalBanner bannerData={data} />
+        </CustomContainer>
+      </S>
+
+      <S>
+        <CustomContainer>
           <Stores title={t("Explore Pharmacy")} />
         </CustomContainer>
       </S>
@@ -216,7 +251,8 @@ const Pharmacy = ({ configData, routeSection }) => {
     </Stack>
   );
 
-  const pharmacySections = getPharmacySections();
+  const { data: bogoHome } = useGetBogoHome();
+  const pharmacySections = getPharmacySections(!!bogoHome?.is_live);
   return (
     <ModuleHomeSidebarLayout
       overviewContent={overviewContent}

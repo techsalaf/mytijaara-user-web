@@ -1,7 +1,12 @@
-
-
 import axios from "axios";
-export const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+// NEXT_PUBLIC_BASE_URL may or may not carry a trailing slash. Axios normalises
+// that when joining baseURL + path, but every server-side `${baseUrl}${path}`
+// template does not — it yields `host//api/v1/...`, which the API answers with
+// a 404. Strip it once here so both styles are safe.
+export const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || "").replace(
+  /\/+$/,
+  "",
+);
 const MainApi = axios.create({
   baseURL: baseUrl,
 });
@@ -19,18 +24,10 @@ MainApi.interceptors.request.use(function (config) {
     token = localStorage.getItem("token");
     language = JSON.parse(localStorage.getItem("language-setting"));
     currentLocation = JSON.parse(localStorage.getItem("currentLatLng"));
-    // GEMINI-MYTJ: Default module id to Shop (3) if not set
-    try {
-      moduleid =
-        JSON.parse(localStorage.getItem("module"))?.id ||
-        localStorage.getItem("selectedModuleId") ||
-        3;
-    } catch {
-      moduleid = 3;
-    }
+    moduleid = JSON.parse(localStorage.getItem("module"))?.id;
   }
-  config.headers.latitude = currentLocation?.lat || 0
-    config.headers.longitude = currentLocation?.lng || 0
+  config.headers.latitude = currentLocation?.lat || 0;
+  config.headers.longitude = currentLocation?.lng || 0;
   const zoneidIsValid =
     zoneid &&
     zoneid !== "undefined" &&
@@ -56,7 +53,7 @@ MainApi.interceptors.request.use(function (config) {
   if (language) config.headers["X-localization"] = language;
   if (hostname) config.headers["origin"] = hostname;
   config.headers["X-software-id"] = software_id;
-  config.headers["Accept"] = 'application/json'
+  config.headers["Accept"] = "application/json";
   config.headers["ngrok-skip-browser-warning"] = true;
   return config;
 });
@@ -68,12 +65,11 @@ MainApi.interceptors.response.use(
       error?.response?.data?.message ||
       error?.response?.data?.error ||
       error?.response?.data?.errors?.[0]?.message;
-    if (typeof window !== "undefined" && status === 422 ) {
-      window.location.href = "/";
-    }
+    // if (typeof window !== "undefined" && status === 422 ) { // probably this logic was used for demo service after one hour the data is reset
+    //   window.location.href = "/";
+    // }
     return Promise.reject(error);
-  }
+  },
 );
-
 
 export default MainApi;

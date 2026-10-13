@@ -31,7 +31,10 @@ import MobileAppBanner from "components/home/MobileAppBanner";
 import GrocerySearchBanner from "./grocery/GrocerySearchBanner";
 import { getGrocerySections } from "./grocery/grocerySectionsConfig";
 import TodaysDeals from "components/home/module-wise-components/grocery/TodaysDeals";
-import TopOfferNotifyBanner from "./food/TopOfferNotifyBanner";
+import TopOfferNHappyHourSection from "./shared/TopOfferNHappyHourSection";
+import BogoBanner from "components/bogo/BogoBanner";
+import useGetBogoHome from "api-manage/hooks/react-query/bogo/useGetBogoHome";
+import BundleItemsSection from "./shared/BundleItemsSection";
 import { useRouter } from "next/router";
 import LastOrdersSection from "./food/LastOrdersSection";
 import QuickDeliverySection from "./food/QuickDeliverySection";
@@ -56,6 +59,12 @@ const Grocery = (props) => {
     (state) => state.utilsData,
   );
   const { data, refetch, isLoading } = useGetOtherBanners();
+  // The other-banners query is enabled:false — fetch it here so the
+  // promotional banner doesn't depend on another page priming the cache.
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const {
     data: visitedStores,
     refetch: refetchVisitAgain,
@@ -86,7 +95,6 @@ const Grocery = (props) => {
   }, [visitedStores, newStore?.stores, moduleId]);
 
   const isSmallScreen = useMediaQuery("(max-width:600px)");
-  console.log({ configData });
 
   const overviewContent = (
     <Stack gap={{ xs: "16px", lg: "32px" }}>
@@ -109,7 +117,7 @@ const Grocery = (props) => {
       <S>
         <CustomContainer>
           {/* new feature */}
-          <TopOfferNotifyBanner />
+          <TopOfferNHappyHourSection />
         </CustomContainer>
       </S>
 
@@ -144,8 +152,13 @@ const Grocery = (props) => {
           />
         </CustomContainer>
       </S>
+      <S>
+        <CustomContainer>
+          <BogoBanner />
+        </CustomContainer>
+      </S>
 
-      {configData?.repeat_order_option && token ? (
+      {token ? (
         <S>
           <CustomContainer noMobilePadding={true}>
             <LastOrdersSection />
@@ -185,6 +198,12 @@ const Grocery = (props) => {
             subtitle={t("Get fastest order from your nearby store")}
             cardVariant="withItems"
           />
+        </CustomContainer>
+      </S>
+
+      <S>
+        <CustomContainer>
+          <BundleItemsSection />
         </CustomContainer>
       </S>
 
@@ -262,7 +281,8 @@ const Grocery = (props) => {
     </Stack>
   );
 
-  const grocerySections = getGrocerySections();
+  const { data: bogoHome } = useGetBogoHome();
+  const grocerySections = getGrocerySections(!!bogoHome?.is_live);
   return (
     <ModuleHomeSidebarLayout
       overviewContent={overviewContent}

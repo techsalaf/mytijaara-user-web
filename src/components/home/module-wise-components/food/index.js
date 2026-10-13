@@ -4,7 +4,10 @@ import useGetNewArrivalStores from "api-manage/hooks/react-query/store/useGetNew
 import MobileAppBanner from "components/home/MobileAppBanner";
 import PaidAds from "components/home/paid-ads";
 import FoodSearchBanner from "./FoodSearchBanner";
-import TopOfferNotifyBanner from "./TopOfferNotifyBanner";
+import TopOfferNHappyHourSection from "../shared/TopOfferNHappyHourSection";
+import BogoBanner from "components/bogo/BogoBanner";
+import useGetBogoHome from "api-manage/hooks/react-query/bogo/useGetBogoHome";
+import BundleItemsSection from "../shared/BundleItemsSection";
 import RecommendedStore from "components/home/recommended-store";
 import ModuleHomeSidebarLayout from "components/home/sidebar-layout/ModuleHomeSidebarLayout";
 import TopOffersNearMe from "components/home/top-offers-nearme";
@@ -24,6 +27,8 @@ import FeaturedCategories from "../../featured-categories";
 import LoveItem from "../../love-item";
 import NewArrivalStores from "../../new-arrival-stores";
 import RunningCampaigns from "../../running-campaigns";
+import PromotionalBanner from "../../PromotionalBanner";
+import SinglePoster from "../ecommerce/SinglePoster";
 import TrendingBites from "../../trending-bites";
 import VisitAgain from "../../visit-again";
 import FeaturedCategoriesWithFilter from "../ecommerce/FeaturedCategoriesWithFilter";
@@ -100,7 +105,7 @@ const FoodModule = (props) => {
       <S>
         <CustomContainer>
           {/* 🔥 new feature TimeBasedServiceBanner */}
-          <TopOfferNotifyBanner />
+          <TopOfferNHappyHourSection />
         </CustomContainer>
       </S>
 
@@ -123,6 +128,11 @@ const FoodModule = (props) => {
         </CustomContainer>
       </S>
       <S>
+        <CustomContainer>
+          <BogoBanner />
+        </CustomContainer>
+      </S>
+      <S>
         {/* 🔥 new feature QuickDeliverySection */}
         <CustomContainer
           sx={{
@@ -134,9 +144,8 @@ const FoodModule = (props) => {
         </CustomContainer>
       </S>
 
-      {configData?.repeat_order_option && token ? (
+      {token ? (
         <S>
-          {/* 🔥 new feature your last order - user logged in wise */}
           <CustomContainer noMobilePadding>
             <LastOrdersSection />
           </CustomContainer>
@@ -161,6 +170,12 @@ const FoodModule = (props) => {
           }}
         >
           <TopPicksSection />
+        </CustomContainer>
+      </S>
+
+      <S>
+        <CustomContainer>
+          <BundleItemsSection />
         </CustomContainer>
       </S>
 
@@ -225,6 +240,12 @@ const FoodModule = (props) => {
         </CustomContainer>
       </S>
 
+      {/* <S>
+        <CustomContainer>
+          <PromotionalBanner bannerData={data} />
+        </CustomContainer>
+      </S> */}
+
       <S>
         <CustomContainer
           sx={{
@@ -233,6 +254,11 @@ const FoodModule = (props) => {
           }}
         >
           <NewArrivalStores />
+        </CustomContainer>
+      </S>
+      <S>
+        <CustomContainer noMobilePadding>
+          <SinglePoster bannerData={data} />
         </CustomContainer>
       </S>
 
@@ -248,7 +274,8 @@ const FoodModule = (props) => {
     </Stack>
   );
 
-  const foodSections = getFoodSections();
+  const { data: bogoHome } = useGetBogoHome();
+  const foodSections = getFoodSections(!!bogoHome?.is_live);
   return (
     <ModuleHomeSidebarLayout
       overviewContent={overviewContent}

@@ -33,6 +33,8 @@ const PaymentMethod = ({
   failedOrderPlace,
   setOpen,
   setSelectedPaymentMethod,
+  onBeforeProceed,
+  onProceed,
 }) => {
   return (
     <CustomStackFullWidth spacing={2}>
@@ -79,6 +81,8 @@ const PaymentMethod = ({
           customerData={customerData}
           payableAmount={payableAmount}
           failedOrderPlace={failedOrderPlace}
+          onBeforeProceed={onBeforeProceed}
+          onProceed={onProceed}
         />
       )}
     </CustomStackFullWidth>
