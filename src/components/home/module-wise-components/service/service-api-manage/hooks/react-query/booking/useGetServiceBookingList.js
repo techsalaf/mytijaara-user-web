@@ -1,6 +1,6 @@
 import MainApi from "api-manage/MainApi";
 import { useQuery } from "react-query";
-import { service_booking_list_api } from "../../ApiRoutes";
+import { service_booking_list_api } from "../../../ApiRoutes";
 
 const getServiceBookings = async (params) => {
   const { data } = await MainApi.get(service_booking_list_api, { params });
