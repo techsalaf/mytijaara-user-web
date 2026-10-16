@@ -1,11 +1,3 @@
-import React, { useState, useEffect, useRef } from "react";
-import Autocomplete from "@mui/material/Autocomplete";
-import Paper from "@mui/material/Paper";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
-import { alpha } from "@mui/material/styles";
-import RecentAddresses from "components/common/RecentAddress";
-
 const RentalSearchLocation = (props) => {
   const {
     HandleChangeForSearch,

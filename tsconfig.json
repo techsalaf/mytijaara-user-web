@@ -21,9 +21,6 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "public/*": [
-        "public/*"
-      ],
       "*": [
         "src/*",
         "pages/*"
@@ -44,7 +41,6 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "playwright.config.ts"
+    "node_modules"
   ]
 }

@@ -17,10 +17,10 @@ const neutral = {
   1100: "#D6D6D6",
 };
 const moduleTheme = {
-  pharmacy: "#006B3C",
-  ecommerce: "#D4AF37",
-  food: "#005A32",
-  parcel: "#A88418",
+  pharmacy: "#31C0F5",
+  ecommerce: "#EEF5FF",
+  food: "#EF7822",
+  parcel: "#D7EFE4",
 };
 
 const background = {
@@ -43,10 +43,10 @@ const foodCardColor = neutral[800];
 const roundStackOne = "rgba(255, 255, 255, 0.04)";
 const roundStackTwo = "rgba(255, 255, 255, 0.06)";
 const primary = {
-  main: "#006B3C",
-  light: "#E8F5EE",
-  dark: "#005A32",
-  deep: "#004D2B",
+  main: "#039D55",
+  light: "#909BEF",
+  dark: "#1c6641",
+  deep: "#026034",
   contrastText: neutral[900],
   semiLight: "#E4FFF3",
   overLay: "#000000",
@@ -57,9 +57,9 @@ const primary = {
 };
 
 const secondary = {
-  main: "#D4AF37",
-  light: "#F5E6A8",
-  dark: "#A88418",
+  main: "#10B981",
+  light: "#3FC79A",
+  dark: "#0B815A",
   contrastText: neutral[900],
 };
 
