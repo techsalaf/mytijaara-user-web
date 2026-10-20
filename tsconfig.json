@@ -19,7 +19,8 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
+    // GEMINI-MYTJ: Keep CI compatible with the repository's TypeScript 5.x toolchain.
+    "ignoreDeprecations": "5.0",
     "paths": {
       "*": [
         "src/*",
