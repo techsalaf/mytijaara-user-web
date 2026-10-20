@@ -184,7 +184,7 @@ const MobileAppBanner = () => {
             <StoreButton onClick={handleAndroidClick}>
               <Stack direction="row" alignItems="center" gap={0.8}>
                 <NextImage
-                  src={playstoreIcon?.src}
+                  src={playstoreIcon}
                   alt="Google Play"
                   height={20}
                   width={20}
@@ -203,7 +203,7 @@ const MobileAppBanner = () => {
               <Stack direction="row" alignItems="center" gap={0.8}>
                 <Box
                   component="img"
-                  src={appleIcon?.src}
+                  src={appleIcon}
                   alt="App Store"
                   sx={{
                     height: 20,
@@ -249,7 +249,7 @@ const MobileAppBanner = () => {
               <StoreButton onClick={handleAndroidClick}>
                 <Stack direction="row" alignItems="center" gap={0.8}>
                   <NextImage
-                    src={playstoreIcon?.src}
+                    src={playstoreIcon}
                     alt="Google Play"
                     height={20}
                     width={20}
@@ -270,7 +270,7 @@ const MobileAppBanner = () => {
                 <Stack direction="row" alignItems="center" gap={0.8}>
                   <Box
                     component="img"
-                    src={appleIcon?.src}
+                    src={appleIcon}
                     alt="App Store"
                     sx={{
                       height: 20,

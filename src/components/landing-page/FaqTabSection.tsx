@@ -255,7 +255,7 @@ const FaqTabSection: React.FC<FaqTabSectionProps> = ({ faq_section }) => {
                                 alignItems: 'center',
                             }}
                         >
-                            <img src={faqImage.src} alt="FAQ" style={{ width: '100%' }} />
+                            <img src={faqImage} alt="FAQ" style={{ width: '100%' }} />
                         </Box>
 
                         <Box>
