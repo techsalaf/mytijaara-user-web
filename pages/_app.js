@@ -11,7 +11,6 @@ import { createTheme } from "theme";
 import CssBaseline from "@mui/material/CssBaseline";
 import { RTL } from "components/rtl";
 import { Toaster } from "react-hot-toast";
-import { getServerSideProps } from "./index";
 import { SettingsConsumer, SettingsProvider } from "contexts/settings-context";
 import "../src/language/i18n";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -112,7 +111,8 @@ function MyApp(props) {
 }
 
 export default MyApp;
-export { getServerSideProps };
+// GEMINI-MYTJ: Keep SSR data fetching on page routes; Next.js does not allow
+// getServerSideProps to be exported from the custom App component.
 
 const getThemeFromCookieHeader = (cookieHeader = "") => {
   const match = cookieHeader.match(/(?:^|;\s*)themeMode=(dark|light)(?:;|$)/);
