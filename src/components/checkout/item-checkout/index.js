@@ -83,6 +83,8 @@ import {
   setOrderDetailsModalOpen,
   setOrderInformation,
 } from "redux/slices/utils";
+// GEMINI-MYTJ: Import setOpenAddressModal
+import { setOpenAddressModal } from "redux/slices/addAddress";
 import CustomImageContainer from "../../CustomImageContainer";
 import thunderstorm from "../assets/thunderstorm.svg";
 import { useFormik } from "formik";
@@ -973,6 +975,20 @@ const ItemCheckout = (props) => {
     }
   };
   const placeOrder = () => {
+    // GEMINI-MYTJ: Delivery address validation before order submission
+    const isDelivery = orderType === "delivery" || orderType === "schedule_order";
+    const hasDeliveryAddress = Boolean(
+      address?.address &&
+      address?.latitude &&
+      address?.longitude &&
+      address?.address !== "null" &&
+      address?.address !== "undefined"
+    );
+    if (isDelivery && !hasDeliveryAddress) {
+      toast.error(t("Please select or add a delivery address to proceed"));
+      dispatch(setOpenAddressModal(true));
+      return;
+    }
     // The server refused to quote this delivery (e.g. an area/zip the zone no
     // longer covers). The fee reads 0 out of the empty payload, so placing here
     // would bill a price the server never agreed — stop instead.

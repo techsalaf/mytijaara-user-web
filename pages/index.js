@@ -19,6 +19,17 @@ const Root = (props) => {
   // `configData`. Refetching it client-side duplicated a 169-key payload on
   // every landing page load for data we already had, so seed redux from the
   // SSR props instead.
+  // GEMINI-MYTJ: Storefront-first client fallback - immediately navigate to storefront defaulting to Shop
+  useEffect(() => {
+    const savedModule =
+      typeof window !== "undefined"
+        ? localStorage.getItem("selectedModuleIdentifier") ||
+          JSON.parse(localStorage.getItem("module") || "null")?.slug ||
+          "shop"
+        : "shop";
+    Router.replace(`/home?module=${savedModule}`);
+  }, []);
+
   useEffect(() => {
     dispatch(setLandingPageData(data));
     if (configData) {
@@ -83,6 +94,15 @@ export const getServerSideProps = async (context) => {
       },
     };
   }
+
+  // GEMINI-MYTJ: Storefront-first SSR redirect - visitors to root '/' immediately reach storefront
+  const selectedModuleCookie = req.cookies.selectedModule || "shop";
+  return {
+    redirect: {
+      destination: `/home?module=${selectedModuleCookie}`,
+      permanent: false,
+    },
+  };
 
   const landingPageRes = await fetch(
     `${(process.env.NEXT_PUBLIC_BASE_URL || "").replace(/\/+$/, "")}/api/v1/react-landing-page`,

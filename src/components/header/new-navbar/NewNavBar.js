@@ -37,6 +37,8 @@ import {
   setOpenForgotPasswordModal,
   setOpenSignInModal,
   setSelectedModule,
+  // GEMINI-MYTJ: Import setOpenLocationModal
+  setOpenLocationModal,
 } from "redux/slices/utils";
 import { handleProductValueWithOutDiscount } from "utils/CustomFunctions";
 
@@ -663,6 +665,19 @@ const NewNavBar = ({ configData }) => {
   const handleModuleChange = (mod) => {
     const isOnHome = router.pathname === "/home";
     if (isOnHome && mod.id === selectedModule?.id) return;
+
+    // GEMINI-MYTJ: Hyperlocal modules (food, grocery) require delivery location
+    const isHyperlocal =
+      mod?.module_type === "food" || mod?.module_type === "grocery";
+    const hasLocation = Boolean(
+      typeof window !== "undefined" &&
+      localStorage.getItem("currentLatLng") &&
+      localStorage.getItem("zoneid")
+    );
+    if (isHyperlocal && !hasLocation) {
+      dispatch(setOpenLocationModal(true));
+    }
+
     localStorage.setItem("module", JSON.stringify(mod));
     dispatch(setSelectedModule(mod));
     const moduleIdentifier = getModuleIdentifier(mod);

@@ -8,12 +8,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useGetModule from "../../api-manage/hooks/react-query/useGetModule";
 import { setModules } from "../../redux/slices/configData";
-import { setSelectedModule } from "../../redux/slices/utils";
+import { setSelectedModule, setOpenLocationModal } from "../../redux/slices/utils";
 import { CustomStackFullWidth } from "../../styled-components/CustomStyles.style";
 import FooterComponent from "../footer";
 import HeaderComponent from "../header";
 import BottomNav from "../header/BottomNav";
 import { MainLayoutRoot } from "./LandingLayout";
+import MapModal from "components/Map/MapModal";
 
 // import { getCurrentModuleType } from "helper-functions/getCurrentModuleType";
 // import { ModuleTypes } from "helper-functions/moduleTypes";
@@ -164,8 +165,8 @@ const MainLayout = ({ children, configData, onHappyHourActiveChange }) => {
   // 		}
   // 	}
   // }
-  const selectedModule = useSelector(
-    (state) => state.utilsData?.selectedModule,
+  const { selectedModule, openLocationModal } = useSelector(
+    (state) => state.utilsData || {},
   );
   const queryModuleType =
     typeof router.query.module === "string" ? router.query.module : null;
@@ -281,6 +282,14 @@ const MainLayout = ({ children, configData, onHappyHourActiveChange }) => {
         router.pathname !== "/service/service-details/[id]" && <BottomNav />}
       <SearchProductModal />
       <FloatingCartButton />
+      {/* GEMINI-MYTJ: Global Location Modal for hyperlocal modules and checkout */}
+      {openLocationModal && (
+        <MapModal
+          open={openLocationModal}
+          handleClose={() => dispatch(setOpenLocationModal(false))}
+          disableAutoFocus
+        />
+      )}
     </MainLayoutRoot>
   );
 };

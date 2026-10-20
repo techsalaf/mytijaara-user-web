@@ -34,6 +34,14 @@ export function middleware(request) {
   const hasModuleParam =
     searchParams.has("module") || searchParams.has("module_id");
 
+  // GEMINI-MYTJ: Storefront-first - visiting root '/' immediately loads storefront defaulting to Shop
+  if (pathname === "/") {
+    const targetModule = moduleFromCookie || "shop";
+    const targetUrl = new URL("/home", request.url);
+    targetUrl.searchParams.set("module", targetModule);
+    return NextResponse.redirect(targetUrl);
+  }
+
   // Check if this route should skip module parameter
   const shouldSkipModule = excludeModuleRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + "/")

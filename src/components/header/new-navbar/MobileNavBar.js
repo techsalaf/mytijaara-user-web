@@ -30,7 +30,8 @@ import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined
 import { setCartList, clearCartGroups } from "redux/slices/cart";
 import { getCartListModuleWise } from "helper-functions/getCartListModuleWise";
 import { getModuleIdentifier, saveModuleParam } from "utils/moduleParamManager";
-import { setSelectedModule } from "redux/slices/utils";
+// GEMINI-MYTJ: Import setOpenLocationModal
+import { setSelectedModule, setOpenLocationModal } from "redux/slices/utils";
 import { useScrollCollapseClass } from "hooks/useScrollDirection";
 import useAnimatedSearchPlaceholder from "hooks/useAnimatedSearchPlaceholder";
 import { getServiceSections } from "components/home/module-wise-components/service/serviceSectionsConfig";
@@ -256,6 +257,18 @@ const MobileNavBar = ({ configData, location, setOpenSignIn }) => {
     const isSameModule = item?.id === selectedModule?.id;
     // Already on /home with the same module → no-op
     if (isHome && isSameModule) return;
+
+    // GEMINI-MYTJ: Hyperlocal modules (food, grocery) require delivery location
+    const isHyperlocal =
+      item?.module_type === "food" || item?.module_type === "grocery";
+    const hasLocation = Boolean(
+      typeof window !== "undefined" &&
+      localStorage.getItem("currentLatLng") &&
+      localStorage.getItem("zoneid")
+    );
+    if (isHyperlocal && !hasLocation) {
+      dispatch(setOpenLocationModal(true));
+    }
 
     dispatch(setSelectedModule(item));
     if (typeof window !== "undefined") {
