@@ -16,7 +16,8 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import Link from 'next/link';
 import { t } from 'i18next';
-import faqImage from "../../../public/landingpage/Question mark.svg"
+// GEMINI-MYTJ: Reference the public illustration by URL for Vercel's Linux build.
+const faqImage = "/landingpage/Question mark.svg";
 
 interface FaqItem {
     id: number;

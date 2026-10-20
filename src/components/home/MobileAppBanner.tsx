@@ -12,10 +12,13 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import NextImage from "components/NextImage";
 import QRCodeClient from "components/landing-page/QRCodeClients";
-import playstoreIcon from "public/static/footer/playstore.svg";
-import appleIcon from "public/static/footer/apple.svg";
-import mobileAppBannerBg from "./assets/mobileAppBanner.svg";
 import useGetAppDownloadSection from "api-manage/hooks/react-query/useGetAppDownloadSection";
+
+// GEMINI-MYTJ: Use public URLs so Vercel's Linux type-check does not resolve
+// static SVG files as TypeScript modules.
+const playstoreIcon = "/static/footer/playstore.svg";
+const appleIcon = "/static/footer/apple.svg";
+const mobileAppBannerBg = "/static/mobileAppBanner.svg";
 
 const bgSrc =
   typeof mobileAppBannerBg === "string"
