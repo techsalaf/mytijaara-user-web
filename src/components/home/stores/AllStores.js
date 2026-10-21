@@ -42,7 +42,8 @@ const AllStores = (props) => {
   );
 
   useEffect(() => {
-    const lastPage = data?.pages?.[data.pages.length - 1];
+    const pages = data?.pages;
+    const lastPage = Array.isArray(pages) && pages.length > 0 ? pages[pages.length - 1] : null;
     if (lastPage?.total_size !== undefined) {
       setTotalDataCount(lastPage.total_size);
     }

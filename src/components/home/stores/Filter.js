@@ -41,7 +41,7 @@ const Filter = (props) => {
 		setAnchorEl(event.currentTarget);
 	};
 	// Split the array into two halves.
-	const dataWithoutPrice = filterData?.filter(
+	const dataWithoutPrice = (filterData || []).filter(
 		(item) =>
 			item?.value !== "price" &&
 			item?.value !== "ratings" &&

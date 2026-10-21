@@ -17,16 +17,17 @@ import { HomeComponentsWrapper } from "../HomePageComponents";
 import SliderSectionHeader from "components/common/SliderSectionHeader";
 
 const FeaturedCategories = () => {
-  const { featuredCategories } = useSelector((state) => state.storedData);
+  const storedFeatured = useSelector((state) => state.storedData?.featuredCategories);
+  const featuredCategories = Array.isArray(storedFeatured) ? storedFeatured : [];
   const slider = useRef(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const { data, isLoading } = useGetFeaturedCategories();
 
-  const totalSlides = data?.data?.length ?? 0;
+  const totalSlides = Array.isArray(data?.data) ? data.data.length : 0;
 
   const foodCategorySliderSettings = {
     dots: false,
-    infinite: featuredCategories.length >= 7,
+    infinite: (featuredCategories?.length ?? 0) >= 7,
     speed: 300,
     slidesToShow: 8.4,
     slidesToScroll: 3,
@@ -39,7 +40,7 @@ const FeaturedCategories = () => {
           slidesToShow: 8.4,
           slidesToScroll: 3,
           swipeToSlide: true,
-          infinite: featuredCategories.length >= 8,
+          infinite: (featuredCategories?.length ?? 0) >= 8,
         },
       },
       {

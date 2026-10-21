@@ -40,56 +40,58 @@ export const storedDataSlice = createSlice({
   initialState,
   reducers: {
     setCategories: (state, action) => {
-      state.categories = action.payload;
+      state.categories = Array.isArray(action.payload) ? action.payload : [];
     },
     setSubCategories: (state, action) => {
-      state.subCategories = action.payload;
+      state.subCategories = Array.isArray(action.payload) ? action.payload : [];
     },
     setPopularStores: (state, action) => {
-      state.popularStores = action.payload;
+      state.popularStores = Array.isArray(action.payload) ? action.payload : [];
     },
     setRecommendedStores: (state, action) => {
-      state.recommendedStores = action.payload;
+      state.recommendedStores = Array.isArray(action.payload) ? action.payload : [];
     },
     setNewStores: (state, action) => {
-      state.newStores = action.payload;
+      state.newStores = Array.isArray(action.payload) ? action.payload : [];
     },
     setBasicCampaigns: (state, action) => {
-      state.basicCampaigns = action.payload;
+      state.basicCampaigns = Array.isArray(action.payload) ? action.payload : [];
     },
     setBanners: (state, action) => {
-      state.banners.banners = action.payload.banners;
-      state.banners.campaigns = action.payload.campaigns;
+      state.banners = {
+        banners: Array.isArray(action.payload?.banners) ? action.payload.banners : [],
+        campaigns: Array.isArray(action.payload?.campaigns) ? action.payload.campaigns : [],
+      };
     },
     setFeaturedCategories: (state, action) => {
-      state.featuredCategories = action.payload;
+      state.featuredCategories = Array.isArray(action.payload) ? action.payload : [];
     },
     setPopularItemsNearby: (state, action) => {
       state.popularItemsNearby = {
-        ...action.payload,
-        products: action.payload.products,
+        ...(action.payload || {}),
+        products: Array.isArray(action.payload?.products) ? action.payload.products : [],
       };
     },
     setRunningCampaigns: (state, action) => {
-      state.runningCampaigns = action.payload;
+      state.runningCampaigns = Array.isArray(action.payload) ? action.payload : [];
     },
     setNewArrivalStores: (state, action) => {
-      state.newArrivalStores = action.payload;
+      state.newArrivalStores = Array.isArray(action.payload) ? action.payload : [];
     },
     setBestReviewedItems: (state, action) => {
       state.bestReviewedItems = {
-        ...action.payload,
-        products: action.payload.products,
+        ...(action.payload || {}),
+        products: Array.isArray(action.payload?.products) ? action.payload.products : [],
       };
     },
     setYouWillLoveItems: (state, action) => {
       state.youWillLoveItems = {
-        ...action.payload,
-        products: action.payload.products,
+        ...(action.payload || {}),
+        products: Array.isArray(action.payload?.products) ? action.payload.products : [],
       };
     },
     setAllSaveAddress: (state, action) => {
-      state.AllSaveAddress = action.payload;
+      state.AllSaveAddress = Array.isArray(action.payload) ? action.payload : [];
     },
     setLandingPage: (state, action) => {
       state.landingPage = action.payload;

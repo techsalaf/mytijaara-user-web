@@ -38,7 +38,10 @@ const BannersWrapper = styled(Box)(({ theme }) => ({
 const CampaignBanners = () => {
   const router = useRouter();
   const { selectedModule } = useSelector((state) => state.utilsData);
-  const { banners } = useSelector((state) => state.storedData);
+  const storedBanners = useSelector((state) => state.storedData?.banners);
+  const banners = storedBanners ?? { banners: [], campaigns: [] };
+  const bannerList = Array.isArray(banners?.banners) ? banners.banners : [];
+  const campaignList = Array.isArray(banners?.campaigns) ? banners.campaigns : [];
   const { data, refetch: refetchBannerData, isFetched } = useGetBanners();
   const [bannersData, setBannersData] = useState([]);
   const [foodBanner, setFoodBanner] = useState();
@@ -47,25 +50,25 @@ const CampaignBanners = () => {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    if (banners.campaigns.length === 0) {
+    if (campaignList.length === 0) {
       refetchBannerData();
     }
-  }, [banners]);
+  }, [campaignList.length]);
   useEffect(() => {
-    if (data?.campaigns) {
+    if (data?.campaigns || data?.banners) {
       dispatch(setBanners(data));
     }
-  }, [data]);
+  }, [data, dispatch]);
   useEffect(() => {
-    if (banners.banners.length > 0) {
+    if (bannerList.length > 0) {
       handleBannersData();
     }
-  }, [banners]);
+  }, [bannerList]);
 
   const handleBannersData = () => {
     let mergedBannerData = [];
-    if (banners?.banners?.length > 0) {
-      banners?.banners?.forEach((item) => mergedBannerData.push(item));
+    if (bannerList.length > 0) {
+      bannerList.forEach((item) => mergedBannerData.push(item));
     }
     setBannersData(mergedBannerData);
   };

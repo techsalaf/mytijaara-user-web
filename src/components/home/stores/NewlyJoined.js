@@ -34,10 +34,10 @@ const NewlyJoined = (props) => {
     setTotalDataCount(item.total_size);
     if (selectedFilterValue === prevSelectedFilter?.current) {
       setStoreData((prev) =>
-        removeDuplicates([...new Set([...prev, ...item?.stores])], "id")
+        removeDuplicates([...new Set([...(prev || []), ...(item?.stores || [])])], "id")
       );
     } else {
-      setStoreData(item?.stores);
+      setStoreData(item?.stores || []);
     }
 
     prevSelectedFilter.current = selectedFilterValue;
@@ -88,7 +88,7 @@ const NewlyJoined = (props) => {
           </CustomStackFullWidth>
         )}
       </Grid>
-      {totalDataCount !== storeData.length && (
+      {totalDataCount !== (storeData?.length ?? 0) && (
         <CustomBoxFullWidth ref={ref}></CustomBoxFullWidth>
       )}
     </CustomBoxFullWidth>

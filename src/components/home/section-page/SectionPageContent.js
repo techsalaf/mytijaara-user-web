@@ -164,8 +164,9 @@ const SectionPageContent = ({ sectionId }) => {
       ? filters.filterBy
       : [];
     const filterValue = [...config.filterValue, ...sortPart, ...filterByPart];
-    const rating_count = filters.selectedRatings.length
-      ? Math.min(...filters.selectedRatings.map(Number))
+    const selectedRatings = Array.isArray(filters?.selectedRatings) ? filters.selectedRatings : [];
+    const rating_count = selectedRatings.length
+      ? Math.min(...selectedRatings.map(Number))
       : 0;
     const minMax =
       filters.priceRange[0] !== 0 || filters.priceRange[1] !== 1000
@@ -175,7 +176,7 @@ const SectionPageContent = ({ sectionId }) => {
     const count =
       (filters.sortBy ? 1 : 0) +
       (filters.priceRange[0] !== 0 || filters.priceRange[1] !== 1000 ? 1 : 0) +
-      filters.selectedRatings.length +
+      selectedRatings.length +
       filterByPart.length;
     setAppliedFilterCount(count);
   };

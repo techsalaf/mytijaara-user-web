@@ -48,13 +48,14 @@ const BestReviewedItems = (props) => {
     isLoading,
     isFetching,
   } = useGetMostReviewed({ type: "all" });
-  const { bestReviewedItems } = useSelector((state) => state.storedData);
+  const storedBest = useSelector((state) => state.storedData?.bestReviewedItems);
+  const bestProducts = Array.isArray(storedBest?.products) ? storedBest.products : [];
   const dispatch = useDispatch();
 
   const getCategoryIds = () => {
     const categoryIds = [];
-    if (bestReviewedItems && bestReviewedItems.products) {
-      bestReviewedItems.products.forEach((product) => {
+    if (bestProducts.length > 0) {
+      bestProducts.forEach((product) => {
         if (product?.category_ids) {
           product?.category_ids.forEach((categoryId) => {
             categoryIds.push(categoryId);
@@ -69,10 +70,10 @@ const BestReviewedItems = (props) => {
     ...new Set(getCategoryIds().map((item) => JSON.stringify(item))),
   ].map(JSON.parse);
   useEffect(() => {
-    if (bestReviewedItems.products.length === 0) {
+    if (bestProducts.length === 0) {
       refetch();
     }
-  }, [bestReviewedItems]);
+  }, [bestProducts.length]);
   useEffect(() => {
     if (data) {
       dispatch(setBestReviewedItems(data));
@@ -83,17 +84,17 @@ const BestReviewedItems = (props) => {
       if (uniqueCategories?.length > 0) {
         setMenu(["All", ...uniqueCategories?.map((item) => item.name)]);
       }
-      setFilteredData(bestReviewedItems.products);
+      setFilteredData(bestProducts);
     }
-  }, [bestReviewedItems.products]);
+  }, [bestProducts]);
   console.log({ uniqueCategories });
 
   useEffect(() => {
     if (selectedMenuIndex === 0) {
-      setFilteredData(bestReviewedItems.products);
+      setFilteredData(bestProducts);
       setReRender(true);
     } else {
-      const categoryWiseData = bestReviewedItems?.products?.filter((item) => {
+      const categoryWiseData = bestProducts.filter((item) => {
         return item?.category_ids?.some((categoryId) => {
           return uniqueCategories[selectedMenuIndex - 1]?.id === categoryId?.id;
         });
@@ -102,7 +103,7 @@ const BestReviewedItems = (props) => {
       setFilteredData(categoryWiseData);
       setReRender(true);
     }
-  }, [selectedMenuIndex]);
+  }, [selectedMenuIndex, bestProducts]);
 
   console.log("vvvv", getCategoryIds());
 

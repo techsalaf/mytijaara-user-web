@@ -187,9 +187,9 @@ const FoodDetailModal = ({
               return {
                 ...item,
                 values:
-                  item.values.length > 0
+                  item?.values?.length > 0
                     ? itemValuesHandler(index, item.values)
-                    : item.values,
+                    : item?.values,
               };
             } else {
               return item;
